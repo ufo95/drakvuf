@@ -142,6 +142,10 @@ if PLUGIN_CPUIDMON
 sources += cpuidmon/cpuidmon.cpp
 endif
 
+if PLUGIN_PROCTRACER
+sources += proctracer/proctracer.cpp
+endif
+
 ###############################################################################
 sources += plugins.cpp plugins.h
 

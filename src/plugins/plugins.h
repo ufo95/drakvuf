@@ -117,6 +117,11 @@ struct filedelete_config {
     const char *dump_folder;
 };
 
+struct proctracer_config {
+    const char *rekall_profile;
+    const char *proctracer_config;
+};
+
 /***************************************************************************/
 
 typedef enum {
@@ -135,6 +140,7 @@ typedef enum drakvuf_plugin {
     PLUGIN_SSDTMON,
     PLUGIN_DEBUGMON,
     PLUGIN_CPUIDMON,
+    PLUGIN_PROCTRACER,
     __DRAKVUF_PLUGIN_LIST_MAX
 } drakvuf_plugin_t;
 
@@ -148,6 +154,7 @@ static const char *drakvuf_plugin_names[] = {
     [PLUGIN_SSDTMON] = "ssdtmon",
     [PLUGIN_DEBUGMON] = "debugmon",
     [PLUGIN_CPUIDMON] = "cpuidmon",
+    [PLUGIN_PROCTRACER] = "proctracer",
 };
 
 class plugin {

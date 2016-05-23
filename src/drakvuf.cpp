@@ -125,7 +125,10 @@ static gpointer timer(gpointer data)
     return NULL;
 }
 
-int drakvuf_c::start_plugins(const bool* plugin_list, const char *dump_folder, bool cpuid_stealth)
+int drakvuf_c::start_plugins(const bool* plugin_list,
+                             const char *dump_folder,
+                             bool cpuid_stealth,
+                             const char *proctracer_config)
 {
     int i, rc;
 
@@ -147,6 +150,17 @@ int drakvuf_c::start_plugins(const bool* plugin_list, const char *dump_folder, b
             case PLUGIN_CPUIDMON:
                 rc = this->plugins->start((drakvuf_plugin_t)i, &cpuid_stealth);
                 break;
+
+            case PLUGIN_PROCTRACER:
+            {
+                struct proctracer_config c = {
+                    .rekall_profile = this->rekall_profile,
+                    .proctracer_config = proctracer_config
+                };
+
+                rc = this->plugins->start((drakvuf_plugin_t)i, &c);
+                break;
+            }
 
             default:
                 rc = this->plugins->start((drakvuf_plugin_t)i, this->rekall_profile);

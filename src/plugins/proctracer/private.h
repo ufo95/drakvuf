@@ -1,6 +1,6 @@
 /*********************IMPORTANT DRAKVUF LICENSE TERMS***********************
  *                                                                         *
- * DRAKVUF (C) 2014-2016 Tamas K Lengyel.                                  *
+ * DRAKVUF Dynamic Malware Analysis System (C) 2014-2015 Tamas K Lengyel.  *
  * Tamas K Lengyel is hereinafter referred to as the author.               *
  * This program is free software; you may redistribute and/or modify it    *
  * under the terms of the GNU General Public License as published by the   *
@@ -102,67 +102,40 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef DRAKVUF_H
-#define DRAKVUF_H
+#ifndef PROCTRACER_PRIVATE_H
+#define PROCTRACER_PRIVATE_H
 
-#include <config.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <inttypes.h>
-#include <stdbool.h>
-#include <string.h>
-#include <unistd.h>
-#include <glib.h>
+#include "proctracer.h"
 
-#include <libdrakvuf/libdrakvuf.h>
-#include <plugins/plugins.h>
-#include <libinjector/libinjector.h>
+enum offset {
+    EPROCESS_PEB,
+    EPROCESS_PID,
+    KPROCESS_DTB,
+    LDR_DATA_TABLE_ENTRY_BASEDLLNAME,
+    LDR_DATA_TABLE_ENTRY_DLLBASE,
+    PEB_IMGBASE,
+    __OFFSET_MAX
+};
 
-#ifdef DRAKVUF_DEBUG
-// This is defined in libdrakvuf
-extern bool verbose;
+static const char *offset_names[__OFFSET_MAX][2] = {
+    [EPROCESS_PEB] = {"_EPROCESS","Peb"},
+    [EPROCESS_PID] = {"_EPROCESS","UniqueProcessId"},
+    [KPROCESS_DTB] = {"_KPROCESS","DirectoryTableBase"},
+    [LDR_DATA_TABLE_ENTRY_BASEDLLNAME] = { "_LDR_DATA_TABLE_ENTRY", "BaseDllName" },
+    [LDR_DATA_TABLE_ENTRY_DLLBASE] = { "_LDR_DATA_TABLE_ENTRY", "DllBase" },
+    [PEB_IMGBASE] = {"_PEB","ImageBaseAddress"}
+};
 
-#define PRINT_DEBUG(...) \
-    do { \
-        if(verbose) fprintf (stderr, __VA_ARGS__); \
-    } while (0)
+struct trace_trap_struct{
+    char* proc_name;
+    addr_t pa;
+    drakvuf_trap_t *trap;
+};
 
-#else
-#define PRINT_DEBUG(...) \
-    do {} while(0)
-#endif
-
-class drakvuf_c {
-    private:
-        bool leave_paused;
-        drakvuf_t drakvuf;
-        drakvuf_plugins* plugins;
-        GThread *timeout_thread = NULL;
-        const char *rekall_profile;
-
-    public:
-        int timeout;
-        int interrupted;
-        GMutex loop_signal;
-
-        drakvuf_c(const char* domain,
-                  const char *rekall_profile,
-                  const output_format_t output,
-                  const int timeout,
-                  const bool verbose,
-                  const bool leave_paused);
-        ~drakvuf_c();
-
-        int is_initialized();
-        void interrupt(int signal);
-        void loop();
-        void pause();
-        void resume();
-        int inject_cmd(vmi_pid_t injection_pid, uint32_t injection_tid, const char *inject_cmd);
-        int start_plugins(const bool* plugin_list,
-                          const char *dump_folder,
-                          bool cpuid_stealth,
-                          const char *proctracer_config);
+struct trace_info{
+    char* mod_name;
+    addr_t offset;
+    proctracer *p;
 };
 
 #endif

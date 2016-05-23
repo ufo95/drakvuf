@@ -209,6 +209,16 @@ if test x$plugin_cpuidmon = xyes; then
   AC_DEFINE_UNQUOTED(ENABLE_PLUGIN_CPUIDMON, 1, "")
 fi
 
+AC_ARG_ENABLE([plugin_proctracer],
+  [AS_HELP_STRING([--disable-plugin-proctracer],
+    [Enable the Proctracer plugin @<:@yes@:>@])],
+  [plugin_proctracer="$enableval"],
+  [plugin_proctracer="yes"])
+AM_CONDITIONAL([PLUGIN_PROCTRACER], [test x$plugin_proctracer = xyes])
+if test x$plugin_proctracer = xyes; then
+  AC_DEFINE_UNQUOTED(ENABLE_PLUGIN_PROCTRACER, 1, "")
+fi
+
 #####################################################
 
 AC_ARG_ENABLE([hardening],
@@ -399,4 +409,5 @@ Exmon:      $plugin_exmon
 SSDTmon:    $plugin_ssdtmon
 CPUIDmon:   $plugin_cpuidmon
 Debugmon:   $plugin_debugmon
+Proctracer: $plugin_proctracer
 -------------------------------------------------------------------------------])

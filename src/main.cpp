@@ -132,6 +132,7 @@ int main(int argc, char** argv) {
     char *domain = NULL;
     char *rekall_profile = NULL;
     char *dump_folder = NULL;
+    char *proctracer_config = NULL;
     vmi_pid_t injection_pid = -1;
     uint32_t injection_thread = 0;
     struct sigaction act;
@@ -164,7 +165,10 @@ int main(int argc, char** argv) {
                "\t -D <file dump folder>     Folder where extracted files should be stored at\n"
 #endif
 #ifdef ENABLE_PLUGIN_CPUIDMON
-               "\t -s                        Hide Hypervisor bits and signature in CPUID\n"
+               "\t -s Hide Hypervisor bits and signature in CPUID\n"
+#endif
+#ifdef ENABLE_PLUGIN_PROCTRACER
+               "\t -P <proctracer config>    Proctracer config json location\n"
 #endif
 #ifdef DRAKVUF_DEBUG
                "\t -v                        Turn on verbose (debug) output\n"
@@ -173,7 +177,7 @@ int main(int argc, char** argv) {
         return rc;
     }
 
-    while ((c = getopt (argc, argv, "r:d:i:I:e:t:D:o:vx:sp")) != -1)
+    while ((c = getopt (argc, argv, "r:d:i:I:e:t:D:o:vx:spP:")) != -1)
     switch (c)
     {
     case 'r':
@@ -213,6 +217,11 @@ int main(int argc, char** argv) {
 #ifdef DRAKVUF_DEBUG
     case 'v':
         verbose = 1;
+        break;
+#endif
+#ifdef ENABLE_PLUGIN_PROCTRACER
+    case 'P':
+        proctracer_config = optarg;
         break;
 #endif
     default:
@@ -256,7 +265,7 @@ int main(int argc, char** argv) {
             goto exit;
     }
 
-    rc = drakvuf->start_plugins(plugin_list, dump_folder, cpuid_stealth);
+    rc = drakvuf->start_plugins(plugin_list, dump_folder, cpuid_stealth, proctracer_config);
     if (!rc)
         goto exit;
 
