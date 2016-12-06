@@ -105,6 +105,7 @@
 #include <glib.h>
 #include <libvmi/libvmi.h>
 #include <json-c/json.h>
+#include "../private.h"
 #include "private.h"
 
 static event_response_t trace_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info){
@@ -133,7 +134,6 @@ static event_response_t exit_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
     proctracer *p = (proctracer*)info->trap->data;
     if (p->trace_status.find(info->regs->cr3) == p->trace_status.end())
         return 0;
-    vmi_instance_t vmi = drakvuf_lock_and_get_vmi(drakvuf);
 
     list<mod_info*> module_traps=p->trace_status[info->regs->cr3];
     for (mod_info* mi: module_traps){
@@ -146,7 +146,6 @@ static event_response_t exit_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
     }
     p->trace_status.erase(info->regs->cr3);
 
-    drakvuf_release_vmi(drakvuf);
     return 0;
 }
 
@@ -242,7 +241,7 @@ static event_response_t cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
     ctx.translate_mechanism = VMI_TM_PROCESS_DTB;
     ctx.dtb = info->regs->cr3;
 
-    addr_t process = drakvuf_get_current_process(drakvuf, info->vcpu, info->regs);
+    addr_t process = drakvuf_get_current_process(drakvuf, info->vcpu);
 
     if (!process) {
         drakvuf_release_vmi(drakvuf);
@@ -274,9 +273,10 @@ proctracer::proctracer(drakvuf_t drakvuf, const void *config, output_format_t ou
     const struct proctracer_config *c = (const struct proctracer_config *)config;
     const char *rekall_profile = c->rekall_profile;
     const char *proctracer_config;
+
     if (c->proctracer_config){
         proctracer_config = c->proctracer_config;
-        printf("Proctracer config: %s\n",proctracer_config);
+        PRINT_DEBUG("Proctracer config: %s\n", proctracer_config);
     } else {
         proctracer_config = "proctracer.json";
     }
@@ -316,7 +316,8 @@ proctracer::proctracer(drakvuf_t drakvuf, const void *config, output_format_t ou
         string mod_path=mod_name;
         mod_path+=".proctracer.json";
         symbols_t *symbols=drakvuf_get_symbols_from_rekall(mod_path.c_str());
-        for (int i=0; i < symbols->count; i++) {
+
+        for (uint64_t i=0; i < symbols->count; i++) {
             const struct symbol *symbol = &symbols->symbols[i];
             this->mod_config[mod_name].push_back(symbol->rva);
         }
