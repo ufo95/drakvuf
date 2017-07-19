@@ -107,7 +107,6 @@
 #include <inttypes.h>
 #include <libvmi/libvmi.h>
 #include <json-c/json.h>
-#include <ctype.h>
 #include "syscalls.h"
 #include "winscproto.h"
 
@@ -308,18 +307,18 @@ static event_response_t win_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
         json_object *jscmodule = json_object_new_string(info->trap->breakpoint.module);
         json_object *jscname = json_object_new_string(info->trap->name);
 
-        json_object_object_add(jobj, "os", jos);
-        json_object_object_add(jobj, "vcpu", jvcpu);
-        json_object_object_add(jobj, "cr3", jcr3);
-        json_object_object_add(jobj, "procname", jprocname);
-        json_object_object_add(jobj, tolower(USERIDSTR(drakvuf)), juserid);
-        json_object_object_add(jobj, "scmodule", jscmodule);
-        json_object_object_add(jobj, "scname", jscname);
+        json_object_object_add(jobj, "OS", jos);
+        json_object_object_add(jobj, "vCPU", jvcpu);
+        json_object_object_add(jobj, "CR3", jcr3);
+        json_object_object_add(jobj, "ProcName", jprocname);
+        json_object_object_add(jobj, USERIDSTR(drakvuf), juserid);
+        json_object_object_add(jobj, "scModule", jscmodule);
+        json_object_object_add(jobj, "scName", jscname);
 
         if ( nargs )
         {
             json_object *jnargs = json_object_new_int(nargs);
-            json_object_object_add(jobj, "nargs", jnargs);
+            json_object_object_add(jobj, "nArgs", jnargs);
 
             json_object *jargarray = json_object_new_array();
             for ( i=0; i<nargs; i++ )
@@ -329,18 +328,18 @@ static event_response_t win_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
                 json_object *jargdir = json_object_new_string(win_arg_direction_names[wsc->args[i].dir]);
                 json_object *jargtype = json_object_new_string(win_type_names[wsc->args[i].type]);
                 json_object *jargname = json_object_new_string(wsc->args[i].name);
-                json_object_object_add(jargobj, "argdir", jargdir);
-                json_object_object_add(jargobj, "argtype", jargtype);
-                json_object_object_add(jargobj, "argname", jargname);
+                json_object_object_add(jargobj, "ArgDir", jargdir);
+                json_object_object_add(jargobj, "ArgType", jargtype);
+                json_object_object_add(jargobj, "ArgName", jargname);
 
                 if ( 4 == s->reg_size ) {
                     val = buf32[i];
                     json_object *jargvalue = json_object_new_int(buf32[i]);
-                    json_object_object_add(jargobj, "argvalue", jargvalue);
+                    json_object_object_add(jargobj, "ArgValue", jargvalue);
                 } else {
                     val = buf64[i];
                     json_object *jargvalue = json_object_new_int64(buf64[i]);
-                    json_object_object_add(jargobj, "argvalue", jargvalue);
+                    json_object_object_add(jargobj, "ArgValue", jargvalue);
                 }
 
                 if ( wsc->args[i].dir == DIR_IN || wsc->args[i].dir == DIR_INOUT )
@@ -353,7 +352,7 @@ static event_response_t win_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
                             char *tmpstring;
                             sprintf(tmpstring, "%s", us->contents);
                             json_object *jargustring = json_object_new_string(tmpstring);
-                            json_object_object_add(jargobj, "argustring", jargustring);
+                            json_object_object_add(jargobj, "ArgUString", jargustring);
                             vmi_free_unicode_str(us);
                         }
                     }
@@ -365,7 +364,7 @@ static event_response_t win_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
                             char *tmpstring;
                             sprintf(tmpstring, "%s", us->contents);
                             json_object *jargfname = json_object_new_string(tmpstring);
-                            json_object_object_add(jargobj, "argfname", jargfname);
+                            json_object_object_add(jargobj, "ArgFName", jargfname);
                             vmi_free_unicode_str(us);
                         }
                     }
@@ -374,7 +373,7 @@ static event_response_t win_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
                 json_object_array_add(jargarray, jargobj);
             }
 
-            json_object_object_add(jobj, "args", jargarray);
+            json_object_object_add(jobj, "Args", jargarray);
         }
         printf("%s\n", json_object_to_json_string(jobj));
         break;
