@@ -116,7 +116,7 @@
 #include "../xen_helper/xen_helper.h"
 
 #define CLONE_CMD       "%s %s %u %s"
-#define DRAKVUF_CMD     "%s %s %u %u %u %s %s %s"
+#define DRAKVUF_CMD     "%s %s %u %u %u %s %s %s %s"
 #define CONFIG_CMD      "%s %s %u %u %u %s %s %s"
 #define CLEANUP_CMD     "%s %u %u"
 #define TCPDUMP_CMD     "%s %u %s %s %s"
@@ -144,6 +144,7 @@ static const char *config_script;
 static const char *drakvuf_script;
 static const char *cleanup_script;
 static const char *tcpdump_script;
+static const char *tcpip_rekall_profile;
 static uint32_t threads;
 static uint32_t injection_pid;
 
@@ -312,8 +313,8 @@ restart:
     g_mutex_lock(&start->timer_lock);
     timer = g_thread_new("timer", timer_thread, start);
 
-    command = g_malloc0(snprintf(NULL, 0, DRAKVUF_CMD, drakvuf_script, rekall_profile, start->cloneID, injection_pid, start->threadid+1, run_folder, start->input, out_folder) + 1);
-    sprintf(command, DRAKVUF_CMD, drakvuf_script, rekall_profile, start->cloneID, injection_pid, start->threadid+1, run_folder, start->input, out_folder);
+    command = g_malloc0(snprintf(NULL, 0, DRAKVUF_CMD, drakvuf_script, rekall_profile, start->cloneID, injection_pid, start->threadid+1, run_folder, start->input, out_folder, tcpip_rekall_profile) + 1);
+    sprintf(command, DRAKVUF_CMD, drakvuf_script, rekall_profile, start->cloneID, injection_pid, start->threadid+1, run_folder, start->input, out_folder, tcpip_rekall_profile);
     printf("[%i] ** RUNNING COMMAND: %s\n", start->threadid, command);
     g_spawn_command_line_sync(command, NULL, NULL, &rc, NULL);
     g_free(command);
@@ -349,9 +350,9 @@ int main(int argc, char** argv)
     unsigned int i, processed = 0;
     int ret = 0;
 
-    if(argc!=14) {
+    if(argc!=15) {
         printf("Not enough arguments: %i!\n", argc);
-        printf("%s <origin domain name> <domain config> <rekall_profile> <injection pid> <watch folder> <serve folder> <output folder> <max clones> <clone_script> <config_script> <drakvuf_script> <cleanup_script> <tcpdump_script>\n", argv[0]);
+        printf("%s <origin domain name> <domain config> <rekall_profile> <injection pid> <watch folder> <serve folder> <output folder> <max clones> <clone_script> <config_script> <drakvuf_script> <cleanup_script> <tcpdump_script> <tcpip_rekall_profile>\n", argv[0]);
         return 1;
     }
 
@@ -370,6 +371,7 @@ int main(int argc, char** argv)
     drakvuf_script = argv[11];
     cleanup_script = argv[12];
     tcpdump_script = argv[13];
+    tcpip_rekall_profile = argv[14];
 
     if (threads > 128) {
         printf("Too many clones requested (max 128 is specified right now)\n");

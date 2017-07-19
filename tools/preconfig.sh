@@ -116,8 +116,9 @@ RUNFOLDER=$5
 RUNFILE=$6
 OUTPUTFOLDER=$7
 MD5=$(md5sum $RUNFOLDER/$RUNFILE | awk -F" " '{print $1}')
-USER="MrX"
-CMD="cmd.exe /c \"netsh interface ip set address name=\\\"Local Area Connection\\\" static 192.168.$VLAN.2 255.255.255.0 192.168.$VLAN.1 && netsh interface ip set dns name=\\\"Local Area Connection\\\" static 192.168.$VLAN.1 validate=no && ping -n 5 127.0.0.1 && powershell (new-object System.Net.WebClient).Downloadfile('http://192.168.$VLAN.1/$RUNFILE', 'C:\\Users\\$USER\\Desktop\\test.exe')\""
+USER="amee"
+#CMD="cmd.exe /c \"netsh interface ip set address name=\\\"Local Area Connection\\\" static 192.168.$VLAN.2 255.255.255.0 192.168.$VLAN.1 && netsh interface ip set dns name=\\\"Local Area Connection\\\" static 192.168.$VLAN.1 validate=no && ping -n 5 127.0.0.1 && powershell (new-object System.Net.WebClient).Downloadfile('http://192.168.$VLAN.1/$RUNFILE', 'C:\\Users\\$USER\\Desktop\\test.exe')\""
+CMD="cmd.exe /c \"netsh interface ip set address name=\\\"Connessione alla rete locale (LAN)\\\" static 192.168.$VLAN.2 255.255.255.0 192.168.$VLAN.1 && netsh interface ip set dns name=\\\"Connessione alla rete locale (LAN)\\\" static 8.8.8.8 validate=no && ping -n 5 127.0.0.1 && powershell (new-object System.Net.WebClient).Downloadfile('http://192.168.$VLAN.1/$RUNFILE', 'C:\\Users\\$USER\\Desktop\\test.exe')\""
 
 mkdir -p $OUTPUTFOLDER/$MD5 1>/dev/null 2>&1
 injector $REKALL $DOMAIN $PID "$CMD" 1>$OUTPUTFOLDER/$MD5/preconfig.log 2>&1
