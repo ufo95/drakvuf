@@ -327,11 +327,12 @@ static event_response_t win_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
                 if ( 4 == s->reg_size ) {
                     val = buf32[i];
                     json_object *jargvalue = json_object_new_int(buf32[i]);
+                    json_object_object_add(jargobj, "argvalue", jargvalue);
                 } else {
                     val = buf64[i];
                     json_object *jargvalue = json_object_new_int64(buf64[i]);
+                    json_object_object_add(jargobj, "argvalue", jargvalue);
                 }
-                json_object_object_add(jargobj, "argvalue", jargvalue);
 
                 if ( wsc->args[i].dir == DIR_IN || wsc->args[i].dir == DIR_INOUT )
                 {
@@ -340,7 +341,9 @@ static event_response_t win_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
                         unicode_string_t *us = read_unicode(vmi, &ctx);
 
                         if ( us ) {
-                            json_object *jargustring = json_object_new_string(us->contents);
+                            char *tmpstring;
+                            sprintf(tmpstring, "%s", us->contents);
+                            json_object *jargustring = json_object_new_string(tmpstring);
                             json_object_object_add(jargobj, "argustring", jargustring);
                             vmi_free_unicode_str(us);
                         }
@@ -350,7 +353,9 @@ static event_response_t win_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
                         unicode_string_t *us = get_filename_from_handle(s, drakvuf, info, vmi, &ctx, val);
 
                         if ( us ) {
-                            json_object *jargfname = json_object_new_string(us->contents);
+                            char *tmpstring;
+                            sprintf(tmpstring, "%s", us->contents);
+                            json_object *jargfname = json_object_new_string(tmpstring);
                             json_object_object_add(jargobj, "argfname", jargfname);
                             vmi_free_unicode_str(us);
                         }
