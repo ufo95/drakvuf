@@ -116,6 +116,7 @@
 #include <dirent.h>
 #include <glib.h>
 #include <err.h>
+#include <json-c/json.h>
 
 #include <libvmi/libvmi.h>
 #include "objmon.h"
@@ -172,8 +173,40 @@ static event_response_t cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
                ckey._key[0], ckey._key[1], ckey._key[2], ckey._key[3]);
         break;
     }
-    default:
     case OUTPUT_JSON:
+    {
+        // Creating a json object
+        json_object *jobj = json_object_new_object();
+
+        // OS field
+        if ( drakvuf_get_os_type(drakvuf) == VMI_OS_WINDOWS ) {
+            json_object *jos = json_object_new_string("windows");
+            json_object_object_add(jobj, "OS", jos);
+        }
+        else {
+            json_object *jos = json_object_new_string("linux");
+            json_object_object_add(jobj, "OS", jos);
+        }
+
+        // Common fields
+        json_object *jvcpu = json_object_new_int(info->vcpu);
+        json_object *jcr3 = json_object_new_int64(info->regs->cr3);
+        json_object *jprocname = json_object_new_string(info->procname);
+        json_object *juserid = json_object_new_int64(info->userid);
+
+        // Filetracer fields
+        char *tmpstring;
+        sprintf(tmpstring, "%c%c%c%c", ckey._key[0], ckey._key[1], ckey._key[2], ckey._key[3]);
+        json_object *jobjmtag = json_object_new_string(tmpstring);
+
+        json_object_object_add(jobj, "vCPU", jvcpu);
+        json_object_object_add(jobj, "CR3", jcr3);
+        json_object_object_add(jobj, "ProcName", jprocname);
+        json_object_object_add(jobj, USERIDSTR(drakvuf), juserid);
+        json_object_object_add(jobj, "ObjMonTag", jobjmtag);
+        break;
+    }
+    default:
     case OUTPUT_DEFAULT:
         printf("[OBJMON] vCPU:%" PRIu32 " CR3:0x%" PRIx64 ",%s %s:%" PRIi64" '%c%c%c%c'",
                info->vcpu, info->regs->cr3, info->procname,
