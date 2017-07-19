@@ -206,6 +206,8 @@ int main(int argc, char** argv) {
     case 'o':
         if(!strncmp(optarg,"csv",3))
             output = OUTPUT_CSV;
+        else if(!strncmp(optarg,"json",4))
+            output = OUTPUT_JSON;
         break;
     case 'x':
         disable_plugin(optarg, plugin_list);
