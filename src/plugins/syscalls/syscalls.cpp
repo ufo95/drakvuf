@@ -106,6 +106,7 @@
 #include <glib.h>
 #include <inttypes.h>
 #include <libvmi/libvmi.h>
+#include <json/json.h>
 #include "syscalls.h"
 #include "winscproto.h"
 
@@ -119,6 +120,7 @@ static event_response_t linux_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
                info->vcpu, info->regs->cr3, info->procname, info->userid, info->trap->breakpoint.module, info->trap->name);
         break;
     default:
+    case OUTPUT_JSON:
     case OUTPUT_DEFAULT:
         printf("[SYSCALL] vCPU:%" PRIu32 " CR3:0x%" PRIx64 ",%s %s:%" PRIi64" %s!%s\n",
                info->vcpu, info->regs->cr3, info->procname,
@@ -287,8 +289,83 @@ static event_response_t win_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
 
         printf("\n");
         break;
-      default:
-      case OUTPUT_DEFAULT:
+    case OUTPUT_JSON:
+        // Creating a json object
+        json_object *jobj = json_object_new_object();
+
+        json_object *jvcpu = json_object_new_int(info->vcpu);
+        json_object *jcr3 = json_object_new_int64(info->regs->cr3);
+        json_object *jprocname = json_object_new_string(info->procname);
+        json_object *juserid = json_object_new_int64(info->userid);
+        json_object *jtrapbpmodule = json_object_new_string(info->trap->breakpoint.module);
+        json_object *jtrapname = json_object_new_string(info->trap->name);
+
+        json_object_object_add(jobj, "vcpu", jvcpu);
+        json_object_object_add(jobj, "cr3", jcr3);
+        json_object_object_add(jobj, "procname", jprocname);
+        json_object_object_add(jobj, "userid", juserid);
+        json_object_object_add(jobj, "trapbpmodule", jtrapbpmodule);
+        json_object_object_add(jobj, "trapname", jtrapname);
+
+        if ( nargs )
+        {
+            json_object *jnargs = json_object_new_int(nargs);
+            json_object_object_add(jobj, "nargs", jnargs);
+
+            json_object *jargarray = json_object_new_array();
+            for ( i=0; i<nargs; i++ )
+            {
+                addr_t val = 0;
+                json_object *jargobj = json_object_new_object();
+                json_object *jargdir = json_object_new_string(win_arg_direction_names[wsc->args[i].dir]);
+                json_object *jargtype = json_object_new_string(win_type_names[wsc->args[i].type]);
+                json_object *jargname = json_object_new_string(wsc->args[i].name);
+                json_object_object_add(jargobj, "argdir", jargdir);
+                json_object_object_add(jargobj, "argtype", jargtype);
+                json_object_object_add(jargobj, "argname", jargname);
+
+                if ( 4 == s->reg_size ) {
+                    val = buf32[i];
+                    json_object *jargvalue = json_object_new_int(buf32[i]);
+                } else {
+                    val = buf64[i];
+                    json_object *jargvalue = json_object_new_int64(buf64[i]);
+                }
+                json_object_object_add(jargobj, "argvalue", jargvalue);
+
+                if ( wsc->args[i].dir == DIR_IN || wsc->args[i].dir == DIR_INOUT )
+                {
+                    if ( wsc->args[i].type == PUNICODE_STRING) {
+                        ctx.addr = val;
+                        unicode_string_t *us = read_unicode(vmi, &ctx);
+
+                        if ( us ) {
+                            json_object *jargustring = json_object_new_string(us->contents);
+                            json_object_object_add(jargobj, "argustring", jargustring);
+                            vmi_free_unicode_str(us);
+                        }
+                    }
+
+                    if ( !strcmp(wsc->args[i].name, "FileHandle") ) {
+                        unicode_string_t *us = get_filename_from_handle(s, drakvuf, info, vmi, &ctx, val);
+
+                        if ( us ) {
+                            json_object *jargfname = json_object_new_string(us->contents);
+                            json_object_object_add(jargobj, "argfname", jargfname);
+                            vmi_free_unicode_str(us);
+                        }
+                    }
+                }
+
+                json_object_array_add(jargarray, jargobj);
+            }
+
+            json_object_object_add(jobj, "args", jargarray);
+        }
+        printf("%s\n", json_object_to_json_string(jobj));
+        break;
+    default:
+    case OUTPUT_DEFAULT:
         printf("[SYSCALL] vCPU:%" PRIu32 " CR3:0x%" PRIx64 ",%s %s:%" PRIi64" %s!%s",
                info->vcpu, info->regs->cr3, info->procname,
                USERIDSTR(drakvuf), info->userid,

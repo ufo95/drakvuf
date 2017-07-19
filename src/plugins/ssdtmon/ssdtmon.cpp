@@ -134,6 +134,7 @@ event_response_t write_cb(drakvuf_t drakvuf, drakvuf_trap_info_t* info) {
                 info->vcpu, info->regs->cr3, info->procname, info->userid, (info->trap_pa - s->kiservicetable)/s->ulongs);
             break;
         default:
+        case OUTPUT_JSON:
         case OUTPUT_DEFAULT:
             printf("[SSDTMON] VCPU:%" PRIu32 " CR3:0x%" PRIx64 ",%s %s:%" PRIi64" Table index:%" PRIi64 "\n",
                    info->vcpu, info->regs->cr3, info->procname,

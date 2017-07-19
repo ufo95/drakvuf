@@ -258,6 +258,7 @@ static event_response_t udpa_x86_ret_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *
                lip, udpa.port);
         break;
     default:
+    case OUTPUT_JSON:
     case OUTPUT_DEFAULT:
         printf("[SOCKETMON] VCPU:%" PRIu32 " CR3:0x%" PRIx64 ",%s %s:%" PRIi64 " Owner:%s %s:%" PRIi64 " %s %s:%u\n",
                info->vcpu, info->regs->cr3, info->procname,
@@ -358,6 +359,7 @@ static event_response_t udpa_x64_ret_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *
                lip, udpa.port);
         break;
     default:
+    case OUTPUT_JSON:
     case OUTPUT_DEFAULT:
         printf("[SOCKETMON] VCPU:%" PRIu32 " CR3:0x%" PRIx64 ",%s %s:%" PRIi64 " Owner:%s %s:%" PRIi64 " %s %s:%u\n",
                info->vcpu, info->regs->cr3, info->procname,
@@ -459,6 +461,7 @@ static event_response_t udpa_win10_x64_ret_cb(drakvuf_t drakvuf, drakvuf_trap_in
                lip, udpa.port);
         break;
     default:
+    case OUTPUT_JSON:
     case OUTPUT_DEFAULT:
         printf("[SOCKETMON] VCPU:%" PRIu32 " CR3:0x%" PRIx64 ",%s %s:%" PRIi64 " Owner:%s %s:%" PRIi64 " %s %s:%u\n",
                info->vcpu, info->regs->cr3, info->procname,
@@ -586,6 +589,7 @@ static event_response_t tcpe_x86_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info
                lip, tcpe.localport, rip, tcpe.remoteport);
         break;
     default:
+    case OUTPUT_JSON:
     case OUTPUT_DEFAULT:
         printf("[SOCKETMON] VCPU:%" PRIu32 " CR3:0x%" PRIx64 ",%s %s:%" PRIi64 " Owner:%s %s:%" PRIi64 " %s State:%s Local:%s:%u Remote:%s:%u\n",
                info->vcpu, info->regs->cr3,
@@ -700,6 +704,7 @@ static event_response_t tcpe_x64_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info
                lip, tcpe.localport, rip, tcpe.remoteport);
         break;
     default:
+    case OUTPUT_JSON:
     case OUTPUT_DEFAULT:
         printf("[SOCKETMON] VCPU:%" PRIu32 " CR3:0x%" PRIx64 ",%s %s:%" PRIi64 " Owner:%s %s:%" PRIi64 " %s State:%s Local:%s:%u Remote:%s:%u\n",
                info->vcpu, info->regs->cr3,
@@ -815,6 +820,7 @@ static event_response_t tcpe_win10_x64_cb(drakvuf_t drakvuf, drakvuf_trap_info_t
                lip, tcpe.localport, rip, tcpe.remoteport);
         break;
     default:
+    case OUTPUT_JSON:
     case OUTPUT_DEFAULT:
         printf("[SOCKETMON] VCPU:%" PRIu32 " CR3:0x%" PRIx64 ",%s %s:%" PRIi64 " Owner:%s %s:%" PRIi64 " %s State:%s Local:%s:%u Remote:%s:%u\n",
                info->vcpu, info->regs->cr3,
@@ -924,6 +930,7 @@ static event_response_t tcpl_x86_ret_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *
                lip, tcpl.port);
         break;
     default:
+    case OUTPUT_JSON:
     case OUTPUT_DEFAULT:
         printf("[SOCKETMON] VCPU:%" PRIu32 " CR3:0x%" PRIx64 ",%s %s:%" PRIi64 " Owner:%s %s:%" PRIi64 " %s listener %s:%u\n",
                info->vcpu, info->regs->cr3, info->procname,
@@ -1024,6 +1031,7 @@ static event_response_t tcpl_x64_ret_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *
                lip, tcpl.port);
         break;
     default:
+    case OUTPUT_JSON:
     case OUTPUT_DEFAULT:
         printf("[SOCKETMON] VCPU:%" PRIu32 " CR3:0x%" PRIx64 ",%s %s:%" PRIi64 " Owner:%s %s:%" PRIi64 " %s listener %s:%u\n",
                info->vcpu, info->regs->cr3, info->procname,
@@ -1124,6 +1132,7 @@ static event_response_t tcpl_win10_x64_ret_cb(drakvuf_t drakvuf, drakvuf_trap_in
                lip, tcpl.port);
         break;
     default:
+    case OUTPUT_JSON:
     case OUTPUT_DEFAULT:
         printf("[SOCKETMON] VCPU:%" PRIu32 " CR3:0x%" PRIx64 ",%s %s:%" PRIi64 " Owner:%s %s:%" PRIi64 " %s listener %s:%u\n",
                info->vcpu, info->regs->cr3, info->procname,

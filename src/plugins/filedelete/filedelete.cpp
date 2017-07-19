@@ -337,6 +337,7 @@ static void grab_file_by_handle(filedelete *f, drakvuf_t drakvuf,
                    info->vcpu, info->regs->cr3, info->procname, info->userid, str2.contents);
             break;
         default:
+        case OUTPUT_JSON:
         case OUTPUT_DEFAULT:
             printf("[FILEDELETE] VCPU:%" PRIu32 " CR3:0x%" PRIx64 ",%s %s:%" PRIi64" \"%s\"\n",
                    info->vcpu, info->regs->cr3, info->procname,

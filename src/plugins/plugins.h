@@ -126,6 +126,7 @@ struct socketmon_config {
 typedef enum {
     OUTPUT_DEFAULT,
     OUTPUT_CSV,
+    OUTPUT_JSON,
     __OUTPUT_MAX
 } output_format_t;
 

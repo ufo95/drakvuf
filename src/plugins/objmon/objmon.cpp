@@ -173,6 +173,7 @@ static event_response_t cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
         break;
     }
     default:
+    case OUTPUT_JSON:
     case OUTPUT_DEFAULT:
         printf("[OBJMON] vCPU:%" PRIu32 " CR3:0x%" PRIx64 ",%s %s:%" PRIi64" '%c%c%c%c'",
                info->vcpu, info->regs->cr3, info->procname,

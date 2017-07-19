@@ -148,6 +148,7 @@ event_response_t debug_cb(drakvuf_t drakvuf, drakvuf_trap_info_t* info) {
                info->regs->rip, info->debug->type, debug_type[info->debug->type]);
         break;
     default:
+    case OUTPUT_JSON:
     case OUTPUT_DEFAULT:
         printf("[DEBUGMON] VCPU:%" PRIu32 " CR3:0x%" PRIx64 ",%s %s:%" PRIi64". "
                "RIP: 0x%" PRIx64". Debug type: %" PRIi32 ",%s\n",
