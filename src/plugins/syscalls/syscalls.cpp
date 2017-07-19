@@ -290,6 +290,7 @@ static event_response_t win_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
         printf("\n");
         break;
     case OUTPUT_JSON:
+    {
         // Creating a json object
         json_object *jobj = json_object_new_object();
 
@@ -369,6 +370,7 @@ static event_response_t win_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
         }
         printf("%s\n", json_object_to_json_string(jobj));
         break;
+    }
     default:
     case OUTPUT_DEFAULT:
         printf("[SYSCALL] vCPU:%" PRIu32 " CR3:0x%" PRIx64 ",%s %s:%" PRIi64" %s!%s",
