@@ -117,6 +117,7 @@
 #include <glib.h>
 #include <err.h>
 #include <json-c/json.h>
+#include <ctype.h>
 
 #include <libvmi/libvmi.h>
 #include "../plugins.h"
