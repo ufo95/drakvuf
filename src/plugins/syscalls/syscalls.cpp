@@ -106,7 +106,7 @@
 #include <glib.h>
 #include <inttypes.h>
 #include <libvmi/libvmi.h>
-#include <json/json.h>
+#include <json-c/json.h>
 #include "syscalls.h"
 #include "winscproto.h"
 
