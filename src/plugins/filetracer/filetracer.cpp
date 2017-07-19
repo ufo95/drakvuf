@@ -179,13 +179,15 @@ static event_response_t objattr_read(drakvuf_t drakvuf, drakvuf_trap_info_t *inf
             json_object *juserid = json_object_new_int64(info->userid);
 
             // Filetracer fields
-            json_object *jftcontents = json_object_new_string(str2.contents);
+            char *tmpstring;
+            sprintf(tmpstring, "%s", str2.contents);
+            json_object *jftname = json_object_new_string(tmpstring);
 
             json_object_object_add(jobj, "vCPU", jvcpu);
             json_object_object_add(jobj, "CR3", jcr3);
             json_object_object_add(jobj, "ProcName", jprocname);
             json_object_object_add(jobj, USERIDSTR(drakvuf), juserid);
-            json_object_object_add(jobj, "FTContents", jftcontents);
+            json_object_object_add(jobj, "FTName", jftname);
             break;
         }
         default:
