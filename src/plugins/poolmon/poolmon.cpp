@@ -183,10 +183,14 @@ static event_response_t cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
         json_object *jobj = json_object_new_object();
 
         // OS field
-        if ( drakvuf->os == VMI_OS_WINDOWS )
+        if ( drakvuf_get_os_type(drakvuf) == VMI_OS_WINDOWS ) {
             json_object *jos = json_object_new_string("windows");
-        else
+            json_object_object_add(jobj, "OS", jos);
+        }
+        else {
             json_object *jos = json_object_new_string("linux");
+            json_object_object_add(jobj, "OS", jos);
+        }
 
         // Common fields
         json_object *jvcpu = json_object_new_int(info->vcpu);
@@ -199,7 +203,6 @@ static event_response_t cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
         json_object *jpooltype = json_object_new_string(pool_type<MaxPoolType ? pool_types[pool_type] : "unknown_pool_type");
         json_object *jpoolsize = json_object_new_int64(size);
 
-        json_object_object_add(jobj, "OS", jos);
         json_object_object_add(jobj, "vCPU", jvcpu);
         json_object_object_add(jobj, "CR3", jcr3);
         json_object_object_add(jobj, "ProcName", jprocname);
