@@ -294,19 +294,26 @@ static event_response_t win_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
         // Creating a json object
         json_object *jobj = json_object_new_object();
 
+        // OS field
+        json_object *jos = json_object_new_string("windows");
+
+        // Common fields
         json_object *jvcpu = json_object_new_int(info->vcpu);
         json_object *jcr3 = json_object_new_int64(info->regs->cr3);
         json_object *jprocname = json_object_new_string(info->procname);
         json_object *juserid = json_object_new_int64(info->userid);
-        json_object *jtrapbpmodule = json_object_new_string(info->trap->breakpoint.module);
-        json_object *jtrapname = json_object_new_string(info->trap->name);
 
+        // Syscall fields
+        json_object *jscmodule = json_object_new_string(info->trap->breakpoint.module);
+        json_object *jscname = json_object_new_string(info->trap->name);
+
+        json_object_object_add(jobj, "os", jos);
         json_object_object_add(jobj, "vcpu", jvcpu);
         json_object_object_add(jobj, "cr3", jcr3);
         json_object_object_add(jobj, "procname", jprocname);
-        json_object_object_add(jobj, "userid", juserid);
-        json_object_object_add(jobj, "trapbpmodule", jtrapbpmodule);
-        json_object_object_add(jobj, "trapname", jtrapname);
+        json_object_object_add(jobj, tolower(USERIDSTR(drakvuf)), juserid);
+        json_object_object_add(jobj, "scmodule", jscmodule);
+        json_object_object_add(jobj, "scname", jscname);
 
         if ( nargs )
         {

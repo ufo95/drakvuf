@@ -116,6 +116,7 @@
 #include <dirent.h>
 #include <glib.h>
 #include <err.h>
+#include <json-c/json.h>
 
 #include <libvmi/libvmi.h>
 #include "../plugins.h"
@@ -176,8 +177,46 @@ static event_response_t cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
             printf(",%s,%s", s->source, s->description);
         break;
     }
-    default:
     case OUTPUT_JSON:
+    {
+        // Creating a json object
+        json_object *jobj = json_object_new_object();
+
+        // OS field
+        if ( drakvuf->os == VMI_OS_WINDOWS )
+            json_object *jos = json_object_new_string("windows");
+        else
+            json_object *jos = json_object_new_string("linux");
+
+        // Common fields
+        json_object *jvcpu = json_object_new_int(info->vcpu);
+        json_object *jcr3 = json_object_new_int64(info->regs->cr3);
+        json_object *jprocname = json_object_new_string(info->procname);
+        json_object *juserid = json_object_new_int64(info->userid);
+
+        // Poolmon fields
+        json_object *jpooltag = json_object_new_string(tag);
+        json_object *jpooltype = json_object_new_string(pool_type<MaxPoolType ? pool_types[pool_type] : "unknown_pool_type");
+        json_object *jpoolsize = json_object_new_int64(size);
+
+        json_object_object_add(jobj, "os", jos);
+        json_object_object_add(jobj, "vcpu", jvcpu);
+        json_object_object_add(jobj, "cr3", jcr3);
+        json_object_object_add(jobj, "procname", jprocname);
+        json_object_object_add(jobj, tolower(USERIDSTR(drakvuf)), juserid);
+        json_object_object_add(jobj, "pooltag", jpooltag);
+        json_object_object_add(jobj, "pooltype", jpooltype);
+        json_object_object_add(jobj, "poolsize", jpoolsize);
+
+        if (s) {
+            json_object *jpoolsrc = json_object_new_string(s->source);
+            json_object *jpooldesc = json_object_new_string(s->description);
+            json_object_object_add(jobj, "poolsrc", jpoolsrc);
+            json_object_object_add(jobj, "pooldesc", jpooldesc);
+        }
+        break;
+    }
+    default:
     case OUTPUT_DEFAULT:
         printf("[POOLMON] vCPU:%" PRIu32 " CR3:0x%" PRIx64 ",%s %s:%" PRIi64 " %s (type: %s, size: %" PRIu64 ")",
                info->vcpu, info->regs->cr3, info->procname,
