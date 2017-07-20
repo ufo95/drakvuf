@@ -358,7 +358,7 @@ static void grab_file_by_handle(filedelete *f, drakvuf_t drakvuf,
             // Common fields
             json_object *jvcpu = json_object_new_int(info->vcpu);
             json_object *jcr3 = json_object_new_int64(info->regs->cr3);
-            json_object *jprocname = json_object_new_string(info->procname);
+            json_object *jprocname = json_object_new_string(CHECKNULL(info->procname));
             json_object *juserid = json_object_new_int64(info->userid);
 
             // Filedelete fields

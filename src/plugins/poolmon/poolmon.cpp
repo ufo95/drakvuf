@@ -198,11 +198,11 @@ static event_response_t cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
         // Common fields
         json_object *jvcpu = json_object_new_int(info->vcpu);
         json_object *jcr3 = json_object_new_int64(info->regs->cr3);
-        json_object *jprocname = json_object_new_string(info->procname);
+        json_object *jprocname = json_object_new_string(CHECKNULL(info->procname));
         json_object *juserid = json_object_new_int64(info->userid);
 
         // Poolmon fields
-        json_object *jpooltag = json_object_new_string(tag);
+        json_object *jpooltag = json_object_new_string(CHECKNULL(tag));
         json_object *jpooltype = json_object_new_string(pool_type<MaxPoolType ? pool_types[pool_type] : "unknown_pool_type");
         json_object *jpoolsize = json_object_new_int64(size);
 
@@ -216,8 +216,8 @@ static event_response_t cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
         json_object_object_add(jobj, "PoolSize", jpoolsize);
 
         if (s) {
-            json_object *jpoolsrc = json_object_new_string(s->source);
-            json_object *jpooldesc = json_object_new_string(s->description);
+            json_object *jpoolsrc = json_object_new_string(CHECKNULL(s->source));
+            json_object *jpooldesc = json_object_new_string(CHECKNULL(s->description));
             json_object_object_add(jobj, "PoolSrc", jpoolsrc);
             json_object_object_add(jobj, "PoolDesc", jpooldesc);
         }

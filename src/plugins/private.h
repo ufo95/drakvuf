@@ -112,6 +112,8 @@ static const char *userid[] = {
 
 #define USERIDSTR(drakvuf) (userid[drakvuf_get_os_type(drakvuf)])
 
+#define CHECKNULL(jstring) (jstring != NULL) ? jstring : ""
+
 #ifdef DRAKVUF_DEBUG
 
 // This is defined in libdrakvuf

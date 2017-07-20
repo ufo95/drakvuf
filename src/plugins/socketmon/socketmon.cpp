@@ -279,14 +279,14 @@ static event_response_t udpa_x86_ret_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *
         // Common fields
         json_object *jvcpu = json_object_new_int(info->vcpu);
         json_object *jcr3 = json_object_new_int64(info->regs->cr3);
-        json_object *jprocname = json_object_new_string(info->procname);
+        json_object *jprocname = json_object_new_string(CHECKNULL(info->procname));
         json_object *juserid = json_object_new_int64(info->userid);
 
         // Socketmon fields
-        json_object *jsmowner = json_object_new_string(owner);
+        json_object *jsmowner = json_object_new_string(CHECKNULL(owner));
         json_object *jsmownerid = json_object_new_int64(ownerid);
         json_object *jsmudpver = json_object_new_string((inetaf.addressfamily == AF_INET) ? "UDPv4" : "UDPv6");
-        json_object *jsmlip = json_object_new_string(lip);
+        json_object *jsmlip = json_object_new_string(CHECKNULL(lip));
         json_object *jsmport = json_object_new_int(udpa.port);
 
         json_object_object_add(jobj, "Plugin", jplugin);
@@ -423,14 +423,14 @@ static event_response_t udpa_x64_ret_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *
         // Common fields
         json_object *jvcpu = json_object_new_int(info->vcpu);
         json_object *jcr3 = json_object_new_int64(info->regs->cr3);
-        json_object *jprocname = json_object_new_string(info->procname);
+        json_object *jprocname = json_object_new_string(CHECKNULL(info->procname));
         json_object *juserid = json_object_new_int64(info->userid);
 
         // Socketmon fields
-        json_object *jsmowner = json_object_new_string(owner);
+        json_object *jsmowner = json_object_new_string(CHECKNULL(owner));
         json_object *jsmownerid = json_object_new_int64(ownerid);
         json_object *jsmudpver = json_object_new_string((inetaf.addressfamily == AF_INET) ? "UDPv4" : "UDPv6");
-        json_object *jsmlip = json_object_new_string(lip);
+        json_object *jsmlip = json_object_new_string(CHECKNULL(lip));
         json_object *jsmport = json_object_new_int(udpa.port);
 
         json_object_object_add(jobj, "Plugin", jplugin);
@@ -568,14 +568,14 @@ static event_response_t udpa_win10_x64_ret_cb(drakvuf_t drakvuf, drakvuf_trap_in
         // Common fields
         json_object *jvcpu = json_object_new_int(info->vcpu);
         json_object *jcr3 = json_object_new_int64(info->regs->cr3);
-        json_object *jprocname = json_object_new_string(info->procname);
+        json_object *jprocname = json_object_new_string(CHECKNULL(info->procname));
         json_object *juserid = json_object_new_int64(info->userid);
 
         // Socketmon fields
-        json_object *jsmowner = json_object_new_string(owner);
+        json_object *jsmowner = json_object_new_string(CHECKNULL(owner));
         json_object *jsmownerid = json_object_new_int64(ownerid);
         json_object *jsmudpver = json_object_new_string((inetaf.addressfamily == AF_INET) ? "UDPv4" : "UDPv6");
-        json_object *jsmlip = json_object_new_string(lip);
+        json_object *jsmlip = json_object_new_string(CHECKNULL(lip));
         json_object *jsmport = json_object_new_int(udpa.port);
 
         json_object_object_add(jobj, "Plugin", jplugin);
@@ -739,17 +739,17 @@ static event_response_t tcpe_x86_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info
         // Common fields
         json_object *jvcpu = json_object_new_int(info->vcpu);
         json_object *jcr3 = json_object_new_int64(info->regs->cr3);
-        json_object *jprocname = json_object_new_string(info->procname);
+        json_object *jprocname = json_object_new_string(CHECKNULL(info->procname));
         json_object *juserid = json_object_new_int64(info->userid);
 
         // Socketmon fields
-        json_object *jsmowner = json_object_new_string(owner);
+        json_object *jsmowner = json_object_new_string(CHECKNULL(owner));
         json_object *jsmownerid = json_object_new_int64(ownerid);
         json_object *jsmtcpver = json_object_new_string((inetaf.addressfamily == AF_INET) ? "TCPv4" : "TCPv6");
-        json_object *jsmstate = json_object_new_string(tcp_state_str[tcpe.state]);
-        json_object *jsmlip = json_object_new_string(lip);
+        json_object *jsmstate = json_object_new_string(CHECKNULL(tcp_state_str[tcpe.state]));
+        json_object *jsmlip = json_object_new_string(CHECKNULL(lip));
         json_object *jsmlport = json_object_new_int(tcpe.localport);
-        json_object *jsmrip = json_object_new_string(rip);
+        json_object *jsmrip = json_object_new_string(CHECKNULL(rip));
         json_object *jsmrport = json_object_new_int(tcpe.remoteport);
 
         json_object_object_add(jobj, "Plugin", jplugin);
@@ -903,17 +903,17 @@ static event_response_t tcpe_x64_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info
         // Common fields
         json_object *jvcpu = json_object_new_int(info->vcpu);
         json_object *jcr3 = json_object_new_int64(info->regs->cr3);
-        json_object *jprocname = json_object_new_string(info->procname);
+        json_object *jprocname = json_object_new_string(CHECKNULL(info->procname));
         json_object *juserid = json_object_new_int64(info->userid);
 
         // Socketmon fields
-        json_object *jsmowner = json_object_new_string(owner);
+        json_object *jsmowner = json_object_new_string(CHECKNULL(owner));
         json_object *jsmownerid = json_object_new_int64(ownerid);
         json_object *jsmtcpver = json_object_new_string((inetaf.addressfamily == AF_INET) ? "TCPv4" : "TCPv6");
-        json_object *jsmstate = json_object_new_string(tcp_state_str[tcpe.state]);
-        json_object *jsmlip = json_object_new_string(lip);
+        json_object *jsmstate = json_object_new_string(CHECKNULL(tcp_state_str[tcpe.state]));
+        json_object *jsmlip = json_object_new_string(CHECKNULL(lip));
         json_object *jsmlport = json_object_new_int(tcpe.localport);
-        json_object *jsmrip = json_object_new_string(rip);
+        json_object *jsmrip = json_object_new_string(CHECKNULL(rip));
         json_object *jsmrport = json_object_new_int(tcpe.remoteport);
 
         json_object_object_add(jobj, "Plugin", jplugin);
@@ -1068,17 +1068,17 @@ static event_response_t tcpe_win10_x64_cb(drakvuf_t drakvuf, drakvuf_trap_info_t
         // Common fields
         json_object *jvcpu = json_object_new_int(info->vcpu);
         json_object *jcr3 = json_object_new_int64(info->regs->cr3);
-        json_object *jprocname = json_object_new_string(info->procname);
+        json_object *jprocname = json_object_new_string(CHECKNULL(info->procname));
         json_object *juserid = json_object_new_int64(info->userid);
 
         // Socketmon fields
-        json_object *jsmowner = json_object_new_string(owner);
+        json_object *jsmowner = json_object_new_string(CHECKNULL(owner));
         json_object *jsmownerid = json_object_new_int64(ownerid);
         json_object *jsmtcpver = json_object_new_string((inetaf.addressfamily == AF_INET) ? "TCPv4" : "TCPv6");
-        json_object *jsmstate = json_object_new_string(tcp_state_str[tcpe.state]);
-        json_object *jsmlip = json_object_new_string(lip);
+        json_object *jsmstate = json_object_new_string(CHECKNULL(tcp_state_str[tcpe.state]));
+        json_object *jsmlip = json_object_new_string(CHECKNULL(lip));
         json_object *jsmlport = json_object_new_int(tcpe.localport);
-        json_object *jsmrip = json_object_new_string(rip);
+        json_object *jsmrip = json_object_new_string(CHECKNULL(rip));
         json_object *jsmrport = json_object_new_int(tcpe.remoteport);
 
         json_object_object_add(jobj, "Plugin", jplugin);
@@ -1227,14 +1227,14 @@ static event_response_t tcpl_x86_ret_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *
         // Common fields
         json_object *jvcpu = json_object_new_int(info->vcpu);
         json_object *jcr3 = json_object_new_int64(info->regs->cr3);
-        json_object *jprocname = json_object_new_string(info->procname);
+        json_object *jprocname = json_object_new_string(CHECKNULL(info->procname));
         json_object *juserid = json_object_new_int64(info->userid);
 
         // Socketmon fields
-        json_object *jsmowner = json_object_new_string(owner);
+        json_object *jsmowner = json_object_new_string(CHECKNULL(owner));
         json_object *jsmownerid = json_object_new_int64(ownerid);
         json_object *jsmudpver = json_object_new_string((inetaf.addressfamily == AF_INET) ? "TCPv4" : "TCPv6");
-        json_object *jsmlip = json_object_new_string(lip);
+        json_object *jsmlip = json_object_new_string(CHECKNULL(lip));
         json_object *jsmport = json_object_new_int(tcpl.port);
 
         json_object_object_add(jobj, "Plugin", jplugin);
@@ -1371,14 +1371,14 @@ static event_response_t tcpl_x64_ret_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *
         // Common fields
         json_object *jvcpu = json_object_new_int(info->vcpu);
         json_object *jcr3 = json_object_new_int64(info->regs->cr3);
-        json_object *jprocname = json_object_new_string(info->procname);
+        json_object *jprocname = json_object_new_string(CHECKNULL(info->procname));
         json_object *juserid = json_object_new_int64(info->userid);
 
         // Socketmon fields
-        json_object *jsmowner = json_object_new_string(owner);
+        json_object *jsmowner = json_object_new_string(CHECKNULL(owner));
         json_object *jsmownerid = json_object_new_int64(ownerid);
         json_object *jsmudpver = json_object_new_string((inetaf.addressfamily == AF_INET) ? "TCPv4" : "TCPv6");
-        json_object *jsmlip = json_object_new_string(lip);
+        json_object *jsmlip = json_object_new_string(CHECKNULL(lip));
         json_object *jsmport = json_object_new_int(tcpl.port);
 
         json_object_object_add(jobj, "Plugin", jplugin);
@@ -1515,14 +1515,14 @@ static event_response_t tcpl_win10_x64_ret_cb(drakvuf_t drakvuf, drakvuf_trap_in
         // Common fields
         json_object *jvcpu = json_object_new_int(info->vcpu);
         json_object *jcr3 = json_object_new_int64(info->regs->cr3);
-        json_object *jprocname = json_object_new_string(info->procname);
+        json_object *jprocname = json_object_new_string(CHECKNULL(info->procname));
         json_object *juserid = json_object_new_int64(info->userid);
 
         // Socketmon fields
-        json_object *jsmowner = json_object_new_string(owner);
+        json_object *jsmowner = json_object_new_string(CHECKNULL(owner));
         json_object *jsmownerid = json_object_new_int64(ownerid);
         json_object *jsmudpver = json_object_new_string((inetaf.addressfamily == AF_INET) ? "TCPv4" : "TCPv6");
-        json_object *jsmlip = json_object_new_string(lip);
+        json_object *jsmlip = json_object_new_string(CHECKNULL(lip));
         json_object *jsmport = json_object_new_int(tcpl.port);
 
         json_object_object_add(jobj, "Plugin", jplugin);

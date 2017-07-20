@@ -303,12 +303,12 @@ static event_response_t win_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
         // Common fields
         json_object *jvcpu = json_object_new_int(info->vcpu);
         json_object *jcr3 = json_object_new_int64(info->regs->cr3);
-        json_object *jprocname = json_object_new_string(info->procname);
+        json_object *jprocname = json_object_new_string(CHECKNULL(info->procname));
         json_object *juserid = json_object_new_int64(info->userid);
 
         // Syscall fields
-        json_object *jscmodule = json_object_new_string(info->trap->breakpoint.module);
-        json_object *jscname = json_object_new_string(info->trap->name);
+        json_object *jscmodule = json_object_new_string(CHECKNULL(info->trap->breakpoint.module));
+        json_object *jscname = json_object_new_string(CHECKNULL(info->trap->name));
 
         json_object_object_add(jobj, "Plugin", jplugin);
         json_object_object_add(jobj, "OS", jos);
@@ -329,9 +329,9 @@ static event_response_t win_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
             {
                 addr_t val = 0;
                 json_object *jargobj = json_object_new_object();
-                json_object *jargdir = json_object_new_string(win_arg_direction_names[wsc->args[i].dir]);
-                json_object *jargtype = json_object_new_string(win_type_names[wsc->args[i].type]);
-                json_object *jargname = json_object_new_string(wsc->args[i].name);
+                json_object *jargdir = json_object_new_string(CHECKNULL(win_arg_direction_names[wsc->args[i].dir]));
+                json_object *jargtype = json_object_new_string(CHECKNULL(win_type_names[wsc->args[i].type]));
+                json_object *jargname = json_object_new_string(CHECKNULL(wsc->args[i].name));
                 json_object_object_add(jargobj, "ArgDir", jargdir);
                 json_object_object_add(jargobj, "ArgType", jargtype);
                 json_object_object_add(jargobj, "ArgName", jargname);

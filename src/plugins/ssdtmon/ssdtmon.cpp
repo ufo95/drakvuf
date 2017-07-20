@@ -155,7 +155,7 @@ event_response_t write_cb(drakvuf_t drakvuf, drakvuf_trap_info_t* info) {
             // Common fields
             json_object *jvcpu = json_object_new_int(info->vcpu);
             json_object *jcr3 = json_object_new_int64(info->regs->cr3);
-            json_object *jprocname = json_object_new_string(info->procname);
+            json_object *jprocname = json_object_new_string(CHECKNULL(info->procname));
             json_object *juserid = json_object_new_int64(info->userid);
 
             // Ssdtmon fields
