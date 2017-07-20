@@ -178,6 +178,9 @@ static event_response_t cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
         // Creating a json object
         json_object *jobj = json_object_new_object();
 
+        // Plugin field
+        json_object *jplugin = json_object_new_string("syscall");
+
         // OS field
         if ( drakvuf_get_os_type(drakvuf) == VMI_OS_WINDOWS ) {
             json_object *jos = json_object_new_string("windows");
@@ -199,6 +202,7 @@ static event_response_t cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
         sprintf(tmpstring, "%c%c%c%c", ckey._key[0], ckey._key[1], ckey._key[2], ckey._key[3]);
         json_object *jobjmtag = json_object_new_string(tmpstring);
 
+        json_object_object_add(jobj, "Plugin", jplugin);
         json_object_object_add(jobj, "vCPU", jvcpu);
         json_object_object_add(jobj, "CR3", jcr3);
         json_object_object_add(jobj, "ProcName", jprocname);
