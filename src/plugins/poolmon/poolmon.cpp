@@ -217,6 +217,7 @@ static event_response_t cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
             json_object_object_add(jobj, "PoolSrc", jpoolsrc);
             json_object_object_add(jobj, "PoolDesc", jpooldesc);
         }
+        printf("%s\n", json_object_to_json_string(jobj));
         break;
     }
     default:

@@ -188,6 +188,7 @@ static event_response_t objattr_read(drakvuf_t drakvuf, drakvuf_trap_info_t *inf
             json_object_object_add(jobj, "ProcName", jprocname);
             json_object_object_add(jobj, USERIDSTR(drakvuf), juserid);
             json_object_object_add(jobj, "FTName", jftname);
+            printf("%s\n", json_object_to_json_string(jobj));
             break;
         }
         default:
