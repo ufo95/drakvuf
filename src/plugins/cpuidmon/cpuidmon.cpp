@@ -116,6 +116,7 @@
 #include <dirent.h>
 #include <glib.h>
 #include <err.h>
+#include <json-c/json.h>
 
 #include <libvmi/libvmi.h>
 #include "../plugins.h"
@@ -130,8 +131,53 @@ event_response_t cpuid_cb(drakvuf_t drakvuf, drakvuf_trap_info_t* info) {
         printf("cpuidmon,%" PRIu32 ",0x%" PRIx64 ",%s,%" PRIi64 "\n",
             info->vcpu, info->regs->cr3, info->procname, info->userid);
         break;
-    default:
     case OUTPUT_JSON:
+    {
+        // Creating a json object
+        json_object *jobj = json_object_new_object();
+
+        // Plugin field
+        json_object *jplugin = json_object_new_string("cpuidmon");
+
+        // OS field
+        if ( drakvuf_get_os_type(drakvuf) == VMI_OS_WINDOWS ) {
+            json_object *jos = json_object_new_string("windows");
+            json_object_object_add(jobj, "OS", jos);
+        }
+        else {
+            json_object *jos = json_object_new_string("linux");
+            json_object_object_add(jobj, "OS", jos);
+        }
+
+        // Common fields
+        json_object *jvcpu = json_object_new_int(info->vcpu);
+        json_object *jcr3 = json_object_new_int64(info->regs->cr3);
+        json_object *jprocname = json_object_new_string(info->procname);
+        json_object *juserid = json_object_new_int64(info->userid);
+
+        // Cpuidmon fields
+        json_object *jcpuidleaf = json_object_new_int(info->cpuid->leaf);
+        json_object *jcpuidsubleaf = json_object_new_int(info->cpuid->subleaf);
+        json_object *jcpuidrax = json_object_new_int64(info->regs->rax);
+        json_object *jcpuidrbx = json_object_new_int64(info->regs->rbx);
+        json_object *jcpuidrcx = json_object_new_int64(info->regs->rcx);
+        json_object *jcpuidrdx = json_object_new_int64(info->regs->rdx);
+
+        json_object_object_add(jobj, "Plugin", jplugin);
+        json_object_object_add(jobj, "vCPU", jvcpu);
+        json_object_object_add(jobj, "CR3", jcr3);
+        json_object_object_add(jobj, "ProcName", jprocname);
+        json_object_object_add(jobj, USERIDSTR(drakvuf), juserid);
+        json_object_object_add(jobj, "CPUIdLeaf", jcpuidleaf);
+        json_object_object_add(jobj, "CPUIdSubLeaf", jcpuidsubleaf);
+        json_object_object_add(jobj, "CPUIdRAX", jcpuidrax);
+        json_object_object_add(jobj, "CPUIdRBX", jcpuidrbx);
+        json_object_object_add(jobj, "CPUIdRCX", jcpuidrcx);
+        json_object_object_add(jobj, "CPUIdRDX", jcpuidrdx);
+        printf("%s\n", json_object_to_json_string(jobj));
+        break;
+    }
+    default:
     case OUTPUT_DEFAULT:
         printf("[CPUIDMON] VCPU:%" PRIu32 " CR3:0x%" PRIx64 ",%s %s:%" PRIi64". "
                "Leaf: 0x%" PRIx32 ". Subleaf: 0x%" PRIx32". "

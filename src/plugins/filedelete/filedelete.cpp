@@ -106,6 +106,7 @@
 #include <config.h>
 #include <inttypes.h>
 #include <libvmi/x86.h>
+#include <json-c/json.h>
 
 #include "../plugins.h"
 #include "filedelete.h"
@@ -336,8 +337,46 @@ static void grab_file_by_handle(filedelete *f, drakvuf_t drakvuf,
             printf("filedelete,%" PRIu32 ",0x%" PRIx64 ",%s,%" PRIi64 ",\"%s\"\n",
                    info->vcpu, info->regs->cr3, info->procname, info->userid, str2.contents);
             break;
-        default:
         case OUTPUT_JSON:
+        {
+            // Creating a json object
+            json_object *jobj = json_object_new_object();
+
+            // Plugin field
+            json_object *jplugin = json_object_new_string("filedelete");
+
+            // OS field
+            if ( drakvuf_get_os_type(drakvuf) == VMI_OS_WINDOWS ) {
+                json_object *jos = json_object_new_string("windows");
+                json_object_object_add(jobj, "OS", jos);
+            }
+            else {
+                json_object *jos = json_object_new_string("linux");
+                json_object_object_add(jobj, "OS", jos);
+            }
+
+            // Common fields
+            json_object *jvcpu = json_object_new_int(info->vcpu);
+            json_object *jcr3 = json_object_new_int64(info->regs->cr3);
+            json_object *jprocname = json_object_new_string(info->procname);
+            json_object *juserid = json_object_new_int64(info->userid);
+
+            // Filedelete fields
+            int tmpsize = snprintf(NULL, 0, "%s", str2.contents);
+            char *tmpstring = (char*) malloc(tmpsize + 1);
+            sprintf(tmpstring, "%s", str2.contents);
+            json_object *jfdname = json_object_new_string(tmpstring);
+
+            json_object_object_add(jobj, "Plugin", jplugin);
+            json_object_object_add(jobj, "vCPU", jvcpu);
+            json_object_object_add(jobj, "CR3", jcr3);
+            json_object_object_add(jobj, "ProcName", jprocname);
+            json_object_object_add(jobj, USERIDSTR(drakvuf), juserid);
+            json_object_object_add(jobj, "FileDelete", jfdname);
+            printf("%s\n", json_object_to_json_string(jobj));
+            break;
+        }
+        default:
         case OUTPUT_DEFAULT:
             printf("[FILEDELETE] VCPU:%" PRIu32 " CR3:0x%" PRIx64 ",%s %s:%" PRIi64" \"%s\"\n",
                    info->vcpu, info->regs->cr3, info->procname,

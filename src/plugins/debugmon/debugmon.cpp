@@ -116,6 +116,7 @@
 #include <dirent.h>
 #include <glib.h>
 #include <err.h>
+#include <json-c/json.h>
 
 #include <libvmi/libvmi.h>
 #include "../plugins.h"
@@ -147,8 +148,47 @@ event_response_t debug_cb(drakvuf_t drakvuf, drakvuf_trap_info_t* info) {
                info->vcpu, info->regs->cr3, info->procname, info->userid,
                info->regs->rip, info->debug->type, debug_type[info->debug->type]);
         break;
-    default:
     case OUTPUT_JSON:
+    {
+        // Creating a json object
+        json_object *jobj = json_object_new_object();
+
+        // Plugin field
+        json_object *jplugin = json_object_new_string("debugmon");
+
+        // OS field
+        if ( drakvuf_get_os_type(drakvuf) == VMI_OS_WINDOWS ) {
+            json_object *jos = json_object_new_string("windows");
+            json_object_object_add(jobj, "OS", jos);
+        }
+        else {
+            json_object *jos = json_object_new_string("linux");
+            json_object_object_add(jobj, "OS", jos);
+        }
+
+        // Common fields
+        json_object *jvcpu = json_object_new_int(info->vcpu);
+        json_object *jcr3 = json_object_new_int64(info->regs->cr3);
+        json_object *jprocname = json_object_new_string(info->procname);
+        json_object *juserid = json_object_new_int64(info->userid);
+
+        // Debugmon fields
+        json_object *jdbgrip = json_object_new_int64(info->regs->rip);
+        json_object *jdbgtype = json_object_new_int(info->debug->type);
+        json_object *jdbgtypestr = json_object_new_string(debug_type[info->debug->type]);
+
+        json_object_object_add(jobj, "Plugin", jplugin);
+        json_object_object_add(jobj, "vCPU", jvcpu);
+        json_object_object_add(jobj, "CR3", jcr3);
+        json_object_object_add(jobj, "ProcName", jprocname);
+        json_object_object_add(jobj, USERIDSTR(drakvuf), juserid);
+        json_object_object_add(jobj, "DbgRIP", jdbgrip);
+        json_object_object_add(jobj, "DbgType", jdbgtype);
+        json_object_object_add(jobj, "DbgTypeStr", jdbgtypestr);
+        printf("%s\n", json_object_to_json_string(jobj));
+        break;        
+    }
+    default:
     case OUTPUT_DEFAULT:
         printf("[DEBUGMON] VCPU:%" PRIu32 " CR3:0x%" PRIx64 ",%s %s:%" PRIi64". "
                "RIP: 0x%" PRIx64". Debug type: %" PRIi32 ",%s\n",

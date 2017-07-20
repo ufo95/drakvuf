@@ -116,6 +116,7 @@
 #include <dirent.h>
 #include <glib.h>
 #include <err.h>
+#include <json-c/json.h>
 
 #include <libvmi/libvmi.h>
 #include "../plugins.h"
@@ -133,8 +134,43 @@ event_response_t write_cb(drakvuf_t drakvuf, drakvuf_trap_info_t* info) {
             printf("ssdtmon,%" PRIu32 ",0x%" PRIx64 ",%s,%" PRIi64 ", %" PRIi64 "\n",
                 info->vcpu, info->regs->cr3, info->procname, info->userid, (info->trap_pa - s->kiservicetable)/s->ulongs);
             break;
-        default:
         case OUTPUT_JSON:
+        {
+            // Creating a json object
+            json_object *jobj = json_object_new_object();
+
+            // Plugin field
+            json_object *jplugin = json_object_new_string("ssdtmon");
+
+            // OS field
+            if ( drakvuf_get_os_type(drakvuf) == VMI_OS_WINDOWS ) {
+                json_object *jos = json_object_new_string("windows");
+                json_object_object_add(jobj, "OS", jos);
+            }
+            else {
+                json_object *jos = json_object_new_string("linux");
+                json_object_object_add(jobj, "OS", jos);
+            }
+
+            // Common fields
+            json_object *jvcpu = json_object_new_int(info->vcpu);
+            json_object *jcr3 = json_object_new_int64(info->regs->cr3);
+            json_object *jprocname = json_object_new_string(info->procname);
+            json_object *juserid = json_object_new_int64(info->userid);
+
+            // Ssdtmon fields
+            json_object *jtblidx = json_object_new_int64((info->trap_pa - s->kiservicetable)/s->ulongs);
+
+            json_object_object_add(jobj, "Plugin", jplugin);
+            json_object_object_add(jobj, "vCPU", jvcpu);
+            json_object_object_add(jobj, "CR3", jcr3);
+            json_object_object_add(jobj, "ProcName", jprocname);
+            json_object_object_add(jobj, USERIDSTR(drakvuf), juserid);
+            json_object_object_add(jobj, "TableIndex", jtblidx);
+            printf("%s\n", json_object_to_json_string(jobj));
+            break;
+        }
+        default:
         case OUTPUT_DEFAULT:
             printf("[SSDTMON] VCPU:%" PRIu32 " CR3:0x%" PRIx64 ",%s %s:%" PRIi64" Table index:%" PRIi64 "\n",
                    info->vcpu, info->regs->cr3, info->procname,
