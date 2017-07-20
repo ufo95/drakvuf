@@ -183,7 +183,7 @@ static event_response_t objattr_read(drakvuf_t drakvuf, drakvuf_trap_info_t *inf
 
             // Filetracer fields
             int tmpsize = snprintf(NULL, 0, "%s", str2.contents);
-            char *tmpstring = malloc(tmpsize + 1);
+            char *tmpstring = (char*) malloc(tmpsize + 1);
             sprintf(tmpstring, "%s", str2.contents);
             json_object *jftname = json_object_new_string(tmpstring);
 

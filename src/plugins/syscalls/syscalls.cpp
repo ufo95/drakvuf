@@ -354,7 +354,7 @@ static event_response_t win_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
 
                         if ( us ) {
                             int tmpsize = snprintf(NULL, 0, "%s", us->contents);
-                            char *tmpstring = malloc(tmpsize + 1);
+                            char *tmpstring = (char*) malloc(tmpsize + 1);
                             sprintf(tmpstring, "%s", us->contents);
                             json_object *jargustring = json_object_new_string(tmpstring);
                             json_object_object_add(jargobj, "ArgUString", jargustring);
@@ -367,7 +367,7 @@ static event_response_t win_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
 
                         if ( us ) {
                             int tmpsize = snprintf(NULL, 0, "%s", us->contents);
-                            char *tmpstring = malloc(tmpsize + 1);
+                            char *tmpstring = (char*) malloc(tmpsize + 1);
                             sprintf(tmpstring, "%s", us->contents);
                             json_object *jargfname = json_object_new_string(tmpstring);
                             json_object_object_add(jargobj, "ArgFName", jargfname);
