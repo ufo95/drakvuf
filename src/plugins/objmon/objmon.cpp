@@ -179,7 +179,7 @@ static event_response_t cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
         json_object *jobj = json_object_new_object();
 
         // Plugin field
-        json_object *jplugin = json_object_new_string("syscall");
+        json_object *jplugin = json_object_new_string("objmon");
 
         // OS field
         if ( drakvuf_get_os_type(drakvuf) == VMI_OS_WINDOWS ) {
@@ -198,7 +198,7 @@ static event_response_t cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
         json_object *juserid = json_object_new_int64(info->userid);
 
         // Filetracer fields
-        char *tmpstring;
+        char tmpstring[8];
         sprintf(tmpstring, "%c%c%c%c", ckey._key[0], ckey._key[1], ckey._key[2], ckey._key[3]);
         json_object *jobjmtag = json_object_new_string(tmpstring);
 
