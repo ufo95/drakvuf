@@ -159,11 +159,12 @@ static event_response_t objattr_read(drakvuf_t drakvuf, drakvuf_trap_info_t *inf
             break;
         case OUTPUT_JSON:
         {
-            // Creating a json object
+            // Root json object
             json_object *jobj = json_object_new_object();
 
             // Plugin field
             json_object *jplugin = json_object_new_string("filetracer");
+            json_object_object_add(jobj, "Plugin", jplugin);
 
             // OS field
             if ( drakvuf_get_os_type(drakvuf) == VMI_OS_WINDOWS ) {
@@ -176,23 +177,26 @@ static event_response_t objattr_read(drakvuf_t drakvuf, drakvuf_trap_info_t *inf
             }
 
             // Common fields
+            json_object *jcommonobj = json_object_new_object();
             json_object *jvcpu = json_object_new_int(info->vcpu);
             json_object *jcr3 = json_object_new_int64(info->regs->cr3);
             json_object *jprocname = json_object_new_string(CHECKNULL(info->procname));
             json_object *juserid = json_object_new_int64(info->userid);
+            json_object_object_add(jcommonobj, "vCPU", jvcpu);
+            json_object_object_add(jcommonobj, "CR3", jcr3);
+            json_object_object_add(jcommonobj, "ProcName", jprocname);
+            json_object_object_add(jcommonobj, "UID", juserid);
+            json_object_object_add(jobj, "Common", jcommonobj);
 
             // Filetracer fields
+            json_object *jftobj = json_object_new_object();
             int tmpsize = snprintf(NULL, 0, "%s", str2.contents);
             char *tmpstring = (char*) malloc(tmpsize + 1);
             sprintf(tmpstring, "%s", str2.contents);
             json_object *jftname = json_object_new_string(tmpstring);
+            json_object_object_add(jftobj, "FileName", jftname);
+            json_object_object_add(jobj, "Filetracer", jftobj);
 
-            json_object_object_add(jobj, "Plugin", jplugin);
-            json_object_object_add(jobj, "vCPU", jvcpu);
-            json_object_object_add(jobj, "CR3", jcr3);
-            json_object_object_add(jobj, "ProcName", jprocname);
-            json_object_object_add(jobj, USERIDSTR(drakvuf), juserid);
-            json_object_object_add(jobj, "FileTrace", jftname);
             printf("%s\n", json_object_to_json_string(jobj));
             break;
         }

@@ -179,11 +179,12 @@ static event_response_t cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
     }
     case OUTPUT_JSON:
     {
-        // Creating a json object
+        // Root json object
         json_object *jobj = json_object_new_object();
 
         // Plugin field
         json_object *jplugin = json_object_new_string("poolmon");
+        json_object_object_add(jobj, "Plugin", jplugin);
 
         // OS field
         if ( drakvuf_get_os_type(drakvuf) == VMI_OS_WINDOWS ) {
@@ -196,31 +197,34 @@ static event_response_t cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
         }
 
         // Common fields
+        json_object *jcommonobj = json_object_new_object();
         json_object *jvcpu = json_object_new_int(info->vcpu);
         json_object *jcr3 = json_object_new_int64(info->regs->cr3);
         json_object *jprocname = json_object_new_string(CHECKNULL(info->procname));
         json_object *juserid = json_object_new_int64(info->userid);
+        json_object_object_add(jcommonobj, "vCPU", jvcpu);
+        json_object_object_add(jcommonobj, "CR3", jcr3);
+        json_object_object_add(jcommonobj, "ProcName", jprocname);
+        json_object_object_add(jcommonobj, "UID", juserid);
+        json_object_object_add(jobj, "Common", jcommonobj);
 
         // Poolmon fields
+        json_object *jpmobj = json_object_new_object();
         json_object *jpooltag = json_object_new_string(CHECKNULL(tag));
         json_object *jpooltype = json_object_new_string(pool_type<MaxPoolType ? pool_types[pool_type] : "unknown_pool_type");
         json_object *jpoolsize = json_object_new_int64(size);
-
-        json_object_object_add(jobj, "Plugin", jplugin);
-        json_object_object_add(jobj, "vCPU", jvcpu);
-        json_object_object_add(jobj, "CR3", jcr3);
-        json_object_object_add(jobj, "ProcName", jprocname);
-        json_object_object_add(jobj, USERIDSTR(drakvuf), juserid);
-        json_object_object_add(jobj, "PoolTag", jpooltag);
-        json_object_object_add(jobj, "PoolType", jpooltype);
-        json_object_object_add(jobj, "PoolSize", jpoolsize);
+        json_object_object_add(jpmobj, "PoolTag", jpooltag);
+        json_object_object_add(jpmobj, "PoolType", jpooltype);
+        json_object_object_add(jpmobj, "PoolSize", jpoolsize);
 
         if (s) {
             json_object *jpoolsrc = json_object_new_string(CHECKNULL(s->source));
             json_object *jpooldesc = json_object_new_string(CHECKNULL(s->description));
-            json_object_object_add(jobj, "PoolSrc", jpoolsrc);
-            json_object_object_add(jobj, "PoolDesc", jpooldesc);
+            json_object_object_add(jpmobj, "PoolSrc", jpoolsrc);
+            json_object_object_add(jpmobj, "PoolDesc", jpooldesc);
         }
+        json_object_object_add(jobj, "Poolmon", jpmobj);
+
         printf("%s\n", json_object_to_json_string(jobj));
         break;
     }

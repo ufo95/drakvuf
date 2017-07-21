@@ -260,11 +260,12 @@ static event_response_t udpa_x86_ret_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *
         break;
     case OUTPUT_JSON:
     {
-        // Creating a json object
+        // Root json object
         json_object *jobj = json_object_new_object();
 
         // Plugin field
         json_object *jplugin = json_object_new_string("socketmon");
+        json_object_object_add(jobj, "Plugin", jplugin);
 
         // OS field
         if ( drakvuf_get_os_type(drakvuf) == VMI_OS_WINDOWS ) {
@@ -277,28 +278,31 @@ static event_response_t udpa_x86_ret_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *
         }
 
         // Common fields
+        json_object *jcommonobj = json_object_new_object();
         json_object *jvcpu = json_object_new_int(info->vcpu);
         json_object *jcr3 = json_object_new_int64(info->regs->cr3);
         json_object *jprocname = json_object_new_string(CHECKNULL(info->procname));
         json_object *juserid = json_object_new_int64(info->userid);
+        json_object_object_add(jcommonobj, "vCPU", jvcpu);
+        json_object_object_add(jcommonobj, "CR3", jcr3);
+        json_object_object_add(jcommonobj, "ProcName", jprocname);
+        json_object_object_add(jcommonobj, "UID", juserid);
+        json_object_object_add(jobj, "Common", jcommonobj);
 
         // Socketmon fields
+        json_object *jsmobj = json_object_new_object();
         json_object *jsmowner = json_object_new_string(CHECKNULL(owner));
         json_object *jsmownerid = json_object_new_int64(ownerid);
         json_object *jsmudpver = json_object_new_string((inetaf.addressfamily == AF_INET) ? "UDPv4" : "UDPv6");
         json_object *jsmlip = json_object_new_string(CHECKNULL(lip));
         json_object *jsmport = json_object_new_int(udpa.port);
+        json_object_object_add(jsmobj, "Owner", jsmowner);
+        json_object_object_add(jsmobj, "OwnerID", jsmownerid);
+        json_object_object_add(jsmobj, "Proto", jsmudpver);
+        json_object_object_add(jsmobj, "LocalIP", jsmlip);
+        json_object_object_add(jsmobj, "LocalPort", jsmport);
+        json_object_object_add(jobj, "Socketmon", jsmobj);
 
-        json_object_object_add(jobj, "Plugin", jplugin);
-        json_object_object_add(jobj, "vCPU", jvcpu);
-        json_object_object_add(jobj, "CR3", jcr3);
-        json_object_object_add(jobj, "ProcName", jprocname);
-        json_object_object_add(jobj, USERIDSTR(drakvuf), juserid);
-        json_object_object_add(jobj, "SocketOwner", jsmowner);
-        json_object_object_add(jobj, "SocketOwnerID", jsmownerid);
-        json_object_object_add(jobj, "SocketProto", jsmudpver);
-        json_object_object_add(jobj, "SocketLocalIP", jsmlip);
-        json_object_object_add(jobj, "SocketLocalPort", jsmport);
         printf("%s\n", json_object_to_json_string(jobj));
         break;
     }
@@ -404,11 +408,12 @@ static event_response_t udpa_x64_ret_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *
         break;
     case OUTPUT_JSON:
     {
-        // Creating a json object
+        // Root json object
         json_object *jobj = json_object_new_object();
 
         // Plugin field
         json_object *jplugin = json_object_new_string("socketmon");
+        json_object_object_add(jobj, "Plugin", jplugin);
 
         // OS field
         if ( drakvuf_get_os_type(drakvuf) == VMI_OS_WINDOWS ) {
@@ -421,28 +426,31 @@ static event_response_t udpa_x64_ret_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *
         }
 
         // Common fields
+        json_object *jcommonobj = json_object_new_object();
         json_object *jvcpu = json_object_new_int(info->vcpu);
         json_object *jcr3 = json_object_new_int64(info->regs->cr3);
         json_object *jprocname = json_object_new_string(CHECKNULL(info->procname));
         json_object *juserid = json_object_new_int64(info->userid);
+        json_object_object_add(jcommonobj, "vCPU", jvcpu);
+        json_object_object_add(jcommonobj, "CR3", jcr3);
+        json_object_object_add(jcommonobj, "ProcName", jprocname);
+        json_object_object_add(jcommonobj, "UID", juserid);
+        json_object_object_add(jobj, "Common", jcommonobj);
 
         // Socketmon fields
+        json_object *jsmobj = json_object_new_object();
         json_object *jsmowner = json_object_new_string(CHECKNULL(owner));
         json_object *jsmownerid = json_object_new_int64(ownerid);
         json_object *jsmudpver = json_object_new_string((inetaf.addressfamily == AF_INET) ? "UDPv4" : "UDPv6");
         json_object *jsmlip = json_object_new_string(CHECKNULL(lip));
         json_object *jsmport = json_object_new_int(udpa.port);
+        json_object_object_add(jsmobj, "Owner", jsmowner);
+        json_object_object_add(jsmobj, "OwnerID", jsmownerid);
+        json_object_object_add(jsmobj, "Proto", jsmudpver);
+        json_object_object_add(jsmobj, "LocalIP", jsmlip);
+        json_object_object_add(jsmobj, "LocalPort", jsmport);
+        json_object_object_add(jobj, "Socketmon", jsmobj);
 
-        json_object_object_add(jobj, "Plugin", jplugin);
-        json_object_object_add(jobj, "vCPU", jvcpu);
-        json_object_object_add(jobj, "CR3", jcr3);
-        json_object_object_add(jobj, "ProcName", jprocname);
-        json_object_object_add(jobj, USERIDSTR(drakvuf), juserid);
-        json_object_object_add(jobj, "SocketOwner", jsmowner);
-        json_object_object_add(jobj, "SocketOwnerID", jsmownerid);
-        json_object_object_add(jobj, "SocketProto", jsmudpver);
-        json_object_object_add(jobj, "SocketLocalIP", jsmlip);
-        json_object_object_add(jobj, "SocketLocalPort", jsmport);
         printf("%s\n", json_object_to_json_string(jobj));
         break;
     }
@@ -549,11 +557,12 @@ static event_response_t udpa_win10_x64_ret_cb(drakvuf_t drakvuf, drakvuf_trap_in
         break;
     case OUTPUT_JSON:
     {
-        // Creating a json object
+        // Root json object
         json_object *jobj = json_object_new_object();
 
         // Plugin field
         json_object *jplugin = json_object_new_string("socketmon");
+        json_object_object_add(jobj, "Plugin", jplugin);
 
         // OS field
         if ( drakvuf_get_os_type(drakvuf) == VMI_OS_WINDOWS ) {
@@ -566,28 +575,31 @@ static event_response_t udpa_win10_x64_ret_cb(drakvuf_t drakvuf, drakvuf_trap_in
         }
 
         // Common fields
+        json_object *jcommonobj = json_object_new_object();
         json_object *jvcpu = json_object_new_int(info->vcpu);
         json_object *jcr3 = json_object_new_int64(info->regs->cr3);
         json_object *jprocname = json_object_new_string(CHECKNULL(info->procname));
         json_object *juserid = json_object_new_int64(info->userid);
+        json_object_object_add(jcommonobj, "vCPU", jvcpu);
+        json_object_object_add(jcommonobj, "CR3", jcr3);
+        json_object_object_add(jcommonobj, "ProcName", jprocname);
+        json_object_object_add(jcommonobj, "UID", juserid);
+        json_object_object_add(jobj, "Common", jcommonobj);
 
         // Socketmon fields
+        json_object *jsmobj = json_object_new_object();
         json_object *jsmowner = json_object_new_string(CHECKNULL(owner));
         json_object *jsmownerid = json_object_new_int64(ownerid);
         json_object *jsmudpver = json_object_new_string((inetaf.addressfamily == AF_INET) ? "UDPv4" : "UDPv6");
         json_object *jsmlip = json_object_new_string(CHECKNULL(lip));
         json_object *jsmport = json_object_new_int(udpa.port);
+        json_object_object_add(jsmobj, "Owner", jsmowner);
+        json_object_object_add(jsmobj, "OwnerID", jsmownerid);
+        json_object_object_add(jsmobj, "Proto", jsmudpver);
+        json_object_object_add(jsmobj, "LocalIP", jsmlip);
+        json_object_object_add(jsmobj, "LocalPort", jsmport);
+        json_object_object_add(jobj, "Socketmon", jsmobj);
 
-        json_object_object_add(jobj, "Plugin", jplugin);
-        json_object_object_add(jobj, "vCPU", jvcpu);
-        json_object_object_add(jobj, "CR3", jcr3);
-        json_object_object_add(jobj, "ProcName", jprocname);
-        json_object_object_add(jobj, USERIDSTR(drakvuf), juserid);
-        json_object_object_add(jobj, "SocketOwner", jsmowner);
-        json_object_object_add(jobj, "SocketOwnerID", jsmownerid);
-        json_object_object_add(jobj, "SocketProto", jsmudpver);
-        json_object_object_add(jobj, "SocketLocalIP", jsmlip);
-        json_object_object_add(jobj, "SocketLocalPort", jsmport);
         printf("%s\n", json_object_to_json_string(jobj));
         break;
     }
@@ -720,11 +732,12 @@ static event_response_t tcpe_x86_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info
         break;
     case OUTPUT_JSON:
     {
-        // Creating a json object
+        // Root json object
         json_object *jobj = json_object_new_object();
 
         // Plugin field
         json_object *jplugin = json_object_new_string("socketmon");
+        json_object_object_add(jobj, "Plugin", jplugin);
 
         // OS field
         if ( drakvuf_get_os_type(drakvuf) == VMI_OS_WINDOWS ) {
@@ -737,12 +750,19 @@ static event_response_t tcpe_x86_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info
         }
 
         // Common fields
+        json_object *jcommonobj = json_object_new_object();
         json_object *jvcpu = json_object_new_int(info->vcpu);
         json_object *jcr3 = json_object_new_int64(info->regs->cr3);
         json_object *jprocname = json_object_new_string(CHECKNULL(info->procname));
         json_object *juserid = json_object_new_int64(info->userid);
+        json_object_object_add(jcommonobj, "vCPU", jvcpu);
+        json_object_object_add(jcommonobj, "CR3", jcr3);
+        json_object_object_add(jcommonobj, "ProcName", jprocname);
+        json_object_object_add(jcommonobj, "UID", juserid);
+        json_object_object_add(jobj, "Common", jcommonobj);
 
         // Socketmon fields
+        json_object *jsmobj = json_object_new_object();
         json_object *jsmowner = json_object_new_string(CHECKNULL(owner));
         json_object *jsmownerid = json_object_new_int64(ownerid);
         json_object *jsmtcpver = json_object_new_string((inetaf.addressfamily == AF_INET) ? "TCPv4" : "TCPv6");
@@ -751,20 +771,16 @@ static event_response_t tcpe_x86_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info
         json_object *jsmlport = json_object_new_int(tcpe.localport);
         json_object *jsmrip = json_object_new_string(CHECKNULL(rip));
         json_object *jsmrport = json_object_new_int(tcpe.remoteport);
+        json_object_object_add(jsmobj, "Owner", jsmowner);
+        json_object_object_add(jsmobj, "OwnerID", jsmownerid);
+        json_object_object_add(jsmobj, "Proto", jsmtcpver);
+        json_object_object_add(jsmobj, "State", jsmstate);
+        json_object_object_add(jsmobj, "LocalIP", jsmlip);
+        json_object_object_add(jsmobj, "LocalPort", jsmlport);
+        json_object_object_add(jsmobj, "RemoteIP", jsmrip);
+        json_object_object_add(jsmobj, "RemotePort", jsmrport);
+        json_object_object_add(jobj, "Socketmon", jsmobj);
 
-        json_object_object_add(jobj, "Plugin", jplugin);
-        json_object_object_add(jobj, "vCPU", jvcpu);
-        json_object_object_add(jobj, "CR3", jcr3);
-        json_object_object_add(jobj, "ProcName", jprocname);
-        json_object_object_add(jobj, USERIDSTR(drakvuf), juserid);
-        json_object_object_add(jobj, "SocketOwner", jsmowner);
-        json_object_object_add(jobj, "SocketOwnerID", jsmownerid);
-        json_object_object_add(jobj, "SocketProto", jsmtcpver);
-        json_object_object_add(jobj, "SocketState", jsmstate);
-        json_object_object_add(jobj, "SocketLocalIP", jsmlip);
-        json_object_object_add(jobj, "SocketLocalPort", jsmlport);
-        json_object_object_add(jobj, "SocketRemoteIP", jsmrip);
-        json_object_object_add(jobj, "SocketRemotePort", jsmrport);
         printf("%s\n", json_object_to_json_string(jobj));
         break;
     }
@@ -884,11 +900,12 @@ static event_response_t tcpe_x64_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info
         break;
     case OUTPUT_JSON:
     {
-        // Creating a json object
+        // Root json object
         json_object *jobj = json_object_new_object();
 
         // Plugin field
         json_object *jplugin = json_object_new_string("socketmon");
+        json_object_object_add(jobj, "Plugin", jplugin);
 
         // OS field
         if ( drakvuf_get_os_type(drakvuf) == VMI_OS_WINDOWS ) {
@@ -901,12 +918,19 @@ static event_response_t tcpe_x64_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info
         }
 
         // Common fields
+        json_object *jcommonobj = json_object_new_object();
         json_object *jvcpu = json_object_new_int(info->vcpu);
         json_object *jcr3 = json_object_new_int64(info->regs->cr3);
         json_object *jprocname = json_object_new_string(CHECKNULL(info->procname));
         json_object *juserid = json_object_new_int64(info->userid);
+        json_object_object_add(jcommonobj, "vCPU", jvcpu);
+        json_object_object_add(jcommonobj, "CR3", jcr3);
+        json_object_object_add(jcommonobj, "ProcName", jprocname);
+        json_object_object_add(jcommonobj, "UID", juserid);
+        json_object_object_add(jobj, "Common", jcommonobj);
 
         // Socketmon fields
+        json_object *jsmobj = json_object_new_object();
         json_object *jsmowner = json_object_new_string(CHECKNULL(owner));
         json_object *jsmownerid = json_object_new_int64(ownerid);
         json_object *jsmtcpver = json_object_new_string((inetaf.addressfamily == AF_INET) ? "TCPv4" : "TCPv6");
@@ -915,20 +939,16 @@ static event_response_t tcpe_x64_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info
         json_object *jsmlport = json_object_new_int(tcpe.localport);
         json_object *jsmrip = json_object_new_string(CHECKNULL(rip));
         json_object *jsmrport = json_object_new_int(tcpe.remoteport);
+        json_object_object_add(jsmobj, "Owner", jsmowner);
+        json_object_object_add(jsmobj, "OwnerID", jsmownerid);
+        json_object_object_add(jsmobj, "Proto", jsmtcpver);
+        json_object_object_add(jsmobj, "State", jsmstate);
+        json_object_object_add(jsmobj, "LocalIP", jsmlip);
+        json_object_object_add(jsmobj, "LocalPort", jsmlport);
+        json_object_object_add(jsmobj, "RemoteIP", jsmrip);
+        json_object_object_add(jsmobj, "RemotePort", jsmrport);
+        json_object_object_add(jobj, "Socketmon", jsmobj);
 
-        json_object_object_add(jobj, "Plugin", jplugin);
-        json_object_object_add(jobj, "vCPU", jvcpu);
-        json_object_object_add(jobj, "CR3", jcr3);
-        json_object_object_add(jobj, "ProcName", jprocname);
-        json_object_object_add(jobj, USERIDSTR(drakvuf), juserid);
-        json_object_object_add(jobj, "SocketOwner", jsmowner);
-        json_object_object_add(jobj, "SocketOwnerID", jsmownerid);
-        json_object_object_add(jobj, "SocketProto", jsmtcpver);
-        json_object_object_add(jobj, "SocketState", jsmstate);
-        json_object_object_add(jobj, "SocketLocalIP", jsmlip);
-        json_object_object_add(jobj, "SocketLocalPort", jsmlport);
-        json_object_object_add(jobj, "SocketRemoteIP", jsmrip);
-        json_object_object_add(jobj, "SocketRemotePort", jsmrport);
         printf("%s\n", json_object_to_json_string(jobj));
         break;
     }
@@ -1049,11 +1069,12 @@ static event_response_t tcpe_win10_x64_cb(drakvuf_t drakvuf, drakvuf_trap_info_t
         break;
     case OUTPUT_JSON:
     {
-        // Creating a json object
+        // Root json object
         json_object *jobj = json_object_new_object();
 
         // Plugin field
         json_object *jplugin = json_object_new_string("socketmon");
+        json_object_object_add(jobj, "Plugin", jplugin);
 
         // OS field
         if ( drakvuf_get_os_type(drakvuf) == VMI_OS_WINDOWS ) {
@@ -1066,12 +1087,19 @@ static event_response_t tcpe_win10_x64_cb(drakvuf_t drakvuf, drakvuf_trap_info_t
         }
 
         // Common fields
+        json_object *jcommonobj = json_object_new_object();
         json_object *jvcpu = json_object_new_int(info->vcpu);
         json_object *jcr3 = json_object_new_int64(info->regs->cr3);
         json_object *jprocname = json_object_new_string(CHECKNULL(info->procname));
         json_object *juserid = json_object_new_int64(info->userid);
+        json_object_object_add(jcommonobj, "vCPU", jvcpu);
+        json_object_object_add(jcommonobj, "CR3", jcr3);
+        json_object_object_add(jcommonobj, "ProcName", jprocname);
+        json_object_object_add(jcommonobj, "UID", juserid);
+        json_object_object_add(jobj, "Common", jcommonobj);
 
         // Socketmon fields
+        json_object *jsmobj = json_object_new_object();
         json_object *jsmowner = json_object_new_string(CHECKNULL(owner));
         json_object *jsmownerid = json_object_new_int64(ownerid);
         json_object *jsmtcpver = json_object_new_string((inetaf.addressfamily == AF_INET) ? "TCPv4" : "TCPv6");
@@ -1080,20 +1108,16 @@ static event_response_t tcpe_win10_x64_cb(drakvuf_t drakvuf, drakvuf_trap_info_t
         json_object *jsmlport = json_object_new_int(tcpe.localport);
         json_object *jsmrip = json_object_new_string(CHECKNULL(rip));
         json_object *jsmrport = json_object_new_int(tcpe.remoteport);
+        json_object_object_add(jsmobj, "Owner", jsmowner);
+        json_object_object_add(jsmobj, "OwnerID", jsmownerid);
+        json_object_object_add(jsmobj, "Proto", jsmtcpver);
+        json_object_object_add(jsmobj, "State", jsmstate);
+        json_object_object_add(jsmobj, "LocalIP", jsmlip);
+        json_object_object_add(jsmobj, "LocalPort", jsmlport);
+        json_object_object_add(jsmobj, "RemoteIP", jsmrip);
+        json_object_object_add(jsmobj, "RemotePort", jsmrport);
+        json_object_object_add(jobj, "Socketmon", jsmobj);
 
-        json_object_object_add(jobj, "Plugin", jplugin);
-        json_object_object_add(jobj, "vCPU", jvcpu);
-        json_object_object_add(jobj, "CR3", jcr3);
-        json_object_object_add(jobj, "ProcName", jprocname);
-        json_object_object_add(jobj, USERIDSTR(drakvuf), juserid);
-        json_object_object_add(jobj, "SocketOwner", jsmowner);
-        json_object_object_add(jobj, "SocketOwnerID", jsmownerid);
-        json_object_object_add(jobj, "SocketProto", jsmtcpver);
-        json_object_object_add(jobj, "SocketState", jsmstate);
-        json_object_object_add(jobj, "SocketLocalIP", jsmlip);
-        json_object_object_add(jobj, "SocketLocalPort", jsmlport);
-        json_object_object_add(jobj, "SocketRemoteIP", jsmrip);
-        json_object_object_add(jobj, "SocketRemotePort", jsmrport);
         printf("%s\n", json_object_to_json_string(jobj));
         break;
     }
@@ -1208,11 +1232,12 @@ static event_response_t tcpl_x86_ret_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *
         break;
     case OUTPUT_JSON:
     {
-        // Creating a json object
+        // Root json object
         json_object *jobj = json_object_new_object();
 
         // Plugin field
         json_object *jplugin = json_object_new_string("socketmon");
+        json_object_object_add(jobj, "Plugin", jplugin);
 
         // OS field
         if ( drakvuf_get_os_type(drakvuf) == VMI_OS_WINDOWS ) {
@@ -1225,28 +1250,31 @@ static event_response_t tcpl_x86_ret_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *
         }
 
         // Common fields
+        json_object *jcommonobj = json_object_new_object();
         json_object *jvcpu = json_object_new_int(info->vcpu);
         json_object *jcr3 = json_object_new_int64(info->regs->cr3);
         json_object *jprocname = json_object_new_string(CHECKNULL(info->procname));
         json_object *juserid = json_object_new_int64(info->userid);
+        json_object_object_add(jcommonobj, "vCPU", jvcpu);
+        json_object_object_add(jcommonobj, "CR3", jcr3);
+        json_object_object_add(jcommonobj, "ProcName", jprocname);
+        json_object_object_add(jcommonobj, "UID", juserid);
+        json_object_object_add(jobj, "Common", jcommonobj);
 
         // Socketmon fields
+        json_object *jsmobj = json_object_new_object();
         json_object *jsmowner = json_object_new_string(CHECKNULL(owner));
         json_object *jsmownerid = json_object_new_int64(ownerid);
         json_object *jsmudpver = json_object_new_string((inetaf.addressfamily == AF_INET) ? "TCPv4" : "TCPv6");
         json_object *jsmlip = json_object_new_string(CHECKNULL(lip));
         json_object *jsmport = json_object_new_int(tcpl.port);
+        json_object_object_add(jsmobj, "Owner", jsmowner);
+        json_object_object_add(jsmobj, "OwnerID", jsmownerid);
+        json_object_object_add(jsmobj, "Proto", jsmudpver);
+        json_object_object_add(jsmobj, "LocalIP", jsmlip);
+        json_object_object_add(jsmobj, "LocalPort", jsmport);
+        json_object_object_add(jobj, "Socketmon", jsmobj);
 
-        json_object_object_add(jobj, "Plugin", jplugin);
-        json_object_object_add(jobj, "vCPU", jvcpu);
-        json_object_object_add(jobj, "CR3", jcr3);
-        json_object_object_add(jobj, "ProcName", jprocname);
-        json_object_object_add(jobj, USERIDSTR(drakvuf), juserid);
-        json_object_object_add(jobj, "SocketOwner", jsmowner);
-        json_object_object_add(jobj, "SocketOwnerID", jsmownerid);
-        json_object_object_add(jobj, "SocketProto", jsmudpver);
-        json_object_object_add(jobj, "SocketLocalIP", jsmlip);
-        json_object_object_add(jobj, "SocketLocalPort", jsmport);
         printf("%s\n", json_object_to_json_string(jobj));
         break;
     }
@@ -1352,11 +1380,12 @@ static event_response_t tcpl_x64_ret_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *
         break;
     case OUTPUT_JSON:
     {
-        // Creating a json object
+        // Root json object
         json_object *jobj = json_object_new_object();
 
         // Plugin field
         json_object *jplugin = json_object_new_string("socketmon");
+        json_object_object_add(jobj, "Plugin", jplugin);
 
         // OS field
         if ( drakvuf_get_os_type(drakvuf) == VMI_OS_WINDOWS ) {
@@ -1369,28 +1398,31 @@ static event_response_t tcpl_x64_ret_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *
         }
 
         // Common fields
+        json_object *jcommonobj = json_object_new_object();
         json_object *jvcpu = json_object_new_int(info->vcpu);
         json_object *jcr3 = json_object_new_int64(info->regs->cr3);
         json_object *jprocname = json_object_new_string(CHECKNULL(info->procname));
         json_object *juserid = json_object_new_int64(info->userid);
+        json_object_object_add(jcommonobj, "vCPU", jvcpu);
+        json_object_object_add(jcommonobj, "CR3", jcr3);
+        json_object_object_add(jcommonobj, "ProcName", jprocname);
+        json_object_object_add(jcommonobj, "UID", juserid);
+        json_object_object_add(jobj, "Common", jcommonobj);
 
         // Socketmon fields
+        json_object *jsmobj = json_object_new_object();
         json_object *jsmowner = json_object_new_string(CHECKNULL(owner));
         json_object *jsmownerid = json_object_new_int64(ownerid);
         json_object *jsmudpver = json_object_new_string((inetaf.addressfamily == AF_INET) ? "TCPv4" : "TCPv6");
         json_object *jsmlip = json_object_new_string(CHECKNULL(lip));
         json_object *jsmport = json_object_new_int(tcpl.port);
+        json_object_object_add(jsmobj, "Owner", jsmowner);
+        json_object_object_add(jsmobj, "OwnerID", jsmownerid);
+        json_object_object_add(jsmobj, "Proto", jsmudpver);
+        json_object_object_add(jsmobj, "LocalIP", jsmlip);
+        json_object_object_add(jsmobj, "LocalPort", jsmport);
+        json_object_object_add(jobj, "Socketmon", jsmobj);
 
-        json_object_object_add(jobj, "Plugin", jplugin);
-        json_object_object_add(jobj, "vCPU", jvcpu);
-        json_object_object_add(jobj, "CR3", jcr3);
-        json_object_object_add(jobj, "ProcName", jprocname);
-        json_object_object_add(jobj, USERIDSTR(drakvuf), juserid);
-        json_object_object_add(jobj, "SocketOwner", jsmowner);
-        json_object_object_add(jobj, "SocketOwnerID", jsmownerid);
-        json_object_object_add(jobj, "SocketProto", jsmudpver);
-        json_object_object_add(jobj, "SocketLocalIP", jsmlip);
-        json_object_object_add(jobj, "SocketLocalPort", jsmport);
         printf("%s\n", json_object_to_json_string(jobj));
         break;
     }
@@ -1496,11 +1528,12 @@ static event_response_t tcpl_win10_x64_ret_cb(drakvuf_t drakvuf, drakvuf_trap_in
         break;
     case OUTPUT_JSON:
     {
-        // Creating a json object
+        // Root json object
         json_object *jobj = json_object_new_object();
 
         // Plugin field
         json_object *jplugin = json_object_new_string("socketmon");
+        json_object_object_add(jobj, "Plugin", jplugin);
 
         // OS field
         if ( drakvuf_get_os_type(drakvuf) == VMI_OS_WINDOWS ) {
@@ -1513,28 +1546,31 @@ static event_response_t tcpl_win10_x64_ret_cb(drakvuf_t drakvuf, drakvuf_trap_in
         }
 
         // Common fields
+        json_object *jcommonobj = json_object_new_object();
         json_object *jvcpu = json_object_new_int(info->vcpu);
         json_object *jcr3 = json_object_new_int64(info->regs->cr3);
         json_object *jprocname = json_object_new_string(CHECKNULL(info->procname));
         json_object *juserid = json_object_new_int64(info->userid);
+        json_object_object_add(jcommonobj, "vCPU", jvcpu);
+        json_object_object_add(jcommonobj, "CR3", jcr3);
+        json_object_object_add(jcommonobj, "ProcName", jprocname);
+        json_object_object_add(jcommonobj, "UID", juserid);
+        json_object_object_add(jobj, "Common", jcommonobj);
 
         // Socketmon fields
+        json_object *jsmobj = json_object_new_object();
         json_object *jsmowner = json_object_new_string(CHECKNULL(owner));
         json_object *jsmownerid = json_object_new_int64(ownerid);
         json_object *jsmudpver = json_object_new_string((inetaf.addressfamily == AF_INET) ? "TCPv4" : "TCPv6");
         json_object *jsmlip = json_object_new_string(CHECKNULL(lip));
         json_object *jsmport = json_object_new_int(tcpl.port);
+        json_object_object_add(jsmobj, "Owner", jsmowner);
+        json_object_object_add(jsmobj, "OwnerID", jsmownerid);
+        json_object_object_add(jsmobj, "Proto", jsmudpver);
+        json_object_object_add(jsmobj, "LocalIP", jsmlip);
+        json_object_object_add(jsmobj, "LocalPort", jsmport);
+        json_object_object_add(jobj, "Socketmon", jsmobj);
 
-        json_object_object_add(jobj, "Plugin", jplugin);
-        json_object_object_add(jobj, "vCPU", jvcpu);
-        json_object_object_add(jobj, "CR3", jcr3);
-        json_object_object_add(jobj, "ProcName", jprocname);
-        json_object_object_add(jobj, USERIDSTR(drakvuf), juserid);
-        json_object_object_add(jobj, "SocketOwner", jsmowner);
-        json_object_object_add(jobj, "SocketOwnerID", jsmownerid);
-        json_object_object_add(jobj, "SocketProto", jsmudpver);
-        json_object_object_add(jobj, "SocketLocalIP", jsmlip);
-        json_object_object_add(jobj, "SocketLocalPort", jsmport);
         printf("%s\n", json_object_to_json_string(jobj));
         break;
     }

@@ -136,11 +136,12 @@ event_response_t write_cb(drakvuf_t drakvuf, drakvuf_trap_info_t* info) {
             break;
         case OUTPUT_JSON:
         {
-            // Creating a json object
+            // Root json object
             json_object *jobj = json_object_new_object();
 
             // Plugin field
             json_object *jplugin = json_object_new_string("ssdtmon");
+            json_object_object_add(jobj, "Plugin", jplugin);
 
             // OS field
             if ( drakvuf_get_os_type(drakvuf) == VMI_OS_WINDOWS ) {
@@ -153,20 +154,23 @@ event_response_t write_cb(drakvuf_t drakvuf, drakvuf_trap_info_t* info) {
             }
 
             // Common fields
+            json_object *jcommonobj = json_object_new_object();
             json_object *jvcpu = json_object_new_int(info->vcpu);
             json_object *jcr3 = json_object_new_int64(info->regs->cr3);
             json_object *jprocname = json_object_new_string(CHECKNULL(info->procname));
             json_object *juserid = json_object_new_int64(info->userid);
+            json_object_object_add(jcommonobj, "vCPU", jvcpu);
+            json_object_object_add(jcommonobj, "CR3", jcr3);
+            json_object_object_add(jcommonobj, "ProcName", jprocname);
+            json_object_object_add(jcommonobj, "UID", juserid);
+            json_object_object_add(jobj, "Common", jcommonobj);
 
             // Ssdtmon fields
+            json_object *jsmobj = json_object_new_object();
             json_object *jtblidx = json_object_new_int64((info->trap_pa - s->kiservicetable)/s->ulongs);
+            json_object_object_add(jsmobj, "TableIndex", jtblidx);
+            json_object_object_add(jobj, "Ssdtmon", jsmobj);
 
-            json_object_object_add(jobj, "Plugin", jplugin);
-            json_object_object_add(jobj, "vCPU", jvcpu);
-            json_object_object_add(jobj, "CR3", jcr3);
-            json_object_object_add(jobj, "ProcName", jprocname);
-            json_object_object_add(jobj, USERIDSTR(drakvuf), juserid);
-            json_object_object_add(jobj, "TableIndex", jtblidx);
             printf("%s\n", json_object_to_json_string(jobj));
             break;
         }

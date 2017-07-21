@@ -133,11 +133,12 @@ event_response_t cpuid_cb(drakvuf_t drakvuf, drakvuf_trap_info_t* info) {
         break;
     case OUTPUT_JSON:
     {
-        // Creating a json object
+        // Root json object
         json_object *jobj = json_object_new_object();
 
         // Plugin field
         json_object *jplugin = json_object_new_string("cpuidmon");
+        json_object_object_add(jobj, "Plugin", jplugin);
 
         // OS field
         if ( drakvuf_get_os_type(drakvuf) == VMI_OS_WINDOWS ) {
@@ -150,30 +151,33 @@ event_response_t cpuid_cb(drakvuf_t drakvuf, drakvuf_trap_info_t* info) {
         }
 
         // Common fields
+        json_object *jcommonobj = json_object_new_object();
         json_object *jvcpu = json_object_new_int(info->vcpu);
         json_object *jcr3 = json_object_new_int64(info->regs->cr3);
         json_object *jprocname = json_object_new_string(CHECKNULL(info->procname));
         json_object *juserid = json_object_new_int64(info->userid);
+        json_object_object_add(jcommonobj, "vCPU", jvcpu);
+        json_object_object_add(jcommonobj, "CR3", jcr3);
+        json_object_object_add(jcommonobj, "ProcName", jprocname);
+        json_object_object_add(jcommonobj, "UID", juserid);
+        json_object_object_add(jobj, "Common", jcommonobj);
 
         // Cpuidmon fields
+        json_object *jcmobj = json_object_new_object();
         json_object *jcpuidleaf = json_object_new_int(info->cpuid->leaf);
         json_object *jcpuidsubleaf = json_object_new_int(info->cpuid->subleaf);
         json_object *jcpuidrax = json_object_new_int64(info->regs->rax);
         json_object *jcpuidrbx = json_object_new_int64(info->regs->rbx);
         json_object *jcpuidrcx = json_object_new_int64(info->regs->rcx);
         json_object *jcpuidrdx = json_object_new_int64(info->regs->rdx);
+        json_object_object_add(jcmobj, "CPUIdLeaf", jcpuidleaf);
+        json_object_object_add(jcmobj, "CPUIdSubLeaf", jcpuidsubleaf);
+        json_object_object_add(jcmobj, "CPUIdRAX", jcpuidrax);
+        json_object_object_add(jcmobj, "CPUIdRBX", jcpuidrbx);
+        json_object_object_add(jcmobj, "CPUIdRCX", jcpuidrcx);
+        json_object_object_add(jcmobj, "CPUIdRDX", jcpuidrdx);
+        json_object_object_add(jobj, "Cpuidmon", jcmobj);
 
-        json_object_object_add(jobj, "Plugin", jplugin);
-        json_object_object_add(jobj, "vCPU", jvcpu);
-        json_object_object_add(jobj, "CR3", jcr3);
-        json_object_object_add(jobj, "ProcName", jprocname);
-        json_object_object_add(jobj, USERIDSTR(drakvuf), juserid);
-        json_object_object_add(jobj, "CPUIdLeaf", jcpuidleaf);
-        json_object_object_add(jobj, "CPUIdSubLeaf", jcpuidsubleaf);
-        json_object_object_add(jobj, "CPUIdRAX", jcpuidrax);
-        json_object_object_add(jobj, "CPUIdRBX", jcpuidrbx);
-        json_object_object_add(jobj, "CPUIdRCX", jcpuidrcx);
-        json_object_object_add(jobj, "CPUIdRDX", jcpuidrdx);
         printf("%s\n", json_object_to_json_string(jobj));
         break;
     }
