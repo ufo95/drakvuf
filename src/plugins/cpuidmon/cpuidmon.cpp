@@ -170,12 +170,12 @@ event_response_t cpuid_cb(drakvuf_t drakvuf, drakvuf_trap_info_t* info) {
         json_object *jcpuidrbx = json_object_new_int64(info->regs->rbx);
         json_object *jcpuidrcx = json_object_new_int64(info->regs->rcx);
         json_object *jcpuidrdx = json_object_new_int64(info->regs->rdx);
-        json_object_object_add(jcmobj, "CPUIdLeaf", jcpuidleaf);
-        json_object_object_add(jcmobj, "CPUIdSubLeaf", jcpuidsubleaf);
-        json_object_object_add(jcmobj, "CPUIdRAX", jcpuidrax);
-        json_object_object_add(jcmobj, "CPUIdRBX", jcpuidrbx);
-        json_object_object_add(jcmobj, "CPUIdRCX", jcpuidrcx);
-        json_object_object_add(jcmobj, "CPUIdRDX", jcpuidrdx);
+        json_object_object_add(jcmobj, "Leaf", jcpuidleaf);
+        json_object_object_add(jcmobj, "SubLeaf", jcpuidsubleaf);
+        json_object_object_add(jcmobj, "RAX", jcpuidrax);
+        json_object_object_add(jcmobj, "RBX", jcpuidrbx);
+        json_object_object_add(jcmobj, "RCX", jcpuidrcx);
+        json_object_object_add(jcmobj, "RDX", jcpuidrdx);
         json_object_object_add(jobj, "Cpuidmon", jcmobj);
 
         printf("%s\n", json_object_to_json_string(jobj));

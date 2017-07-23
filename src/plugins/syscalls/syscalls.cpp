@@ -318,8 +318,8 @@ static event_response_t win_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
         json_object *jscobj = json_object_new_object();
         json_object *jscmodule = json_object_new_string(CHECKNULL(info->trap->breakpoint.module));
         json_object *jscname = json_object_new_string(CHECKNULL(info->trap->name));
-        json_object_object_add(jscobj, "scModule", jscmodule);
-        json_object_object_add(jscobj, "scName", jscname);
+        json_object_object_add(jscobj, "Module", jscmodule);
+        json_object_object_add(jscobj, "Name", jscname);
 
         if ( nargs )
         {
