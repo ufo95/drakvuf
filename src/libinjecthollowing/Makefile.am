@@ -102,59 +102,28 @@
 #                                                                         #
 #*************************************************************************#
 
-bin_PROGRAMS = drakvuf xen_memclone injector injecthollowing monitorapi
+h_sources = libinjecthollowing.h private.h
+c_sources = injecthollowing.c
 
-SUBDIRS = xen_helper libdrakvuf libinjector libinjecthollowing libmonitorapi plugins dirwatch
-
-drakvuf_SOURCES = main.cpp drakvuf.cpp
-xen_memclone_SOURCES  = xen_memclone.c
-injector_SOURCES = injector.c
-injecthollowing_SOURCES = injecthollowing.c
-monitorapi_SOURCES = monitorapi.c
-
-AM_CFLAGS = $(CFLAGS)
+AM_CFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src -I$(srcdir)
+AM_CFLAGS += $(CFLAGS)
 AM_CFLAGS += $(VMI_CFLAGS)
 AM_CFLAGS += $(GLIB_CFLAGS)
-AM_CFLAGS += -I$(top_srcdir) -I$(srcdir)
-
-AM_CPPFLAGS = $(CPPFLAGS)
-AM_CPPFLAGS += $(VMI_CFLAGS)
-AM_CPPFLAGS += $(GLIB_CFLAGS)
-AM_CPPFLAGS += -I$(top_srcdir) -I$(srcdir)
 
 if HARDENING
 AM_CFLAGS += $(HARDEN_CFLAGS) -DHARDENING
-AM_CPPFLAGS += $(HARDEN_CFLAGS) -DHARDENING
 endif
 
 # Note that -pg is incompatible with HARDENING
 if DEBUG
 AM_CFLAGS += -DDRAKVUF_DEBUG -Werror -Wall -Wextra -g -ggdb3
 AM_CFLAGS += -Wno-missing-field-initializers
-AM_CPPFLAGS += -DDRAKVUF_DEBUG -Werror -Wall -Wextra -g -ggdb3
-AM_CPPFLAGS += -Wno-missing-field-initializers
 if !HARDENING
 AM_CFLAGS += -pg
-AM_CPPFLAGS += -pg
 endif
 endif
 
-drakvuf_LDADD = libdrakvuf/libdrakvuf.la
-drakvuf_LDADD += xen_helper/libxenhelper.la
-drakvuf_LDADD += plugins/libdrakvufplugins.la
-drakvuf_LDADD += libinjector/libinjector.la
-drakvuf_LDADD += libinjecthollowing/libinjecthollowing.la
-drakvuf_LDADD += libmonitorapi/libmonitorapi.la
-
-if HARDENING
-drakvuf_LDADD += $(HARDEN_LDFLAGS)
-endif
-
-injector_LDADD = libdrakvuf/libdrakvuf.la
-injector_LDADD += libinjector/libinjector.la
-injecthollowing_LDADD = libdrakvuf/libdrakvuf.la
-injecthollowing_LDADD += libinjecthollowing/libinjecthollowing.la
-monitorapi_LDADD = libdrakvuf/libdrakvuf.la
-monitorapi_LDADD += libmonitorapi/libmonitorapi.la
-
-xen_memclone_LDADD = xen_helper/libxenhelper.la
+noinst_LTLIBRARIES= libinjecthollowing.la
+libinjecthollowing_la_SOURCES= $(h_sources) $(c_sources)
+libinjecthollowing_la_LIBADD= ../xen_helper/libxenhelper.la
+libinjecthollowing_la_LIBADD+= ../libdrakvuf/libdrakvuf.la
