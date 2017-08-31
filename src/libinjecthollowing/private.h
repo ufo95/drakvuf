@@ -264,7 +264,7 @@ struct image_file_header {      // IMAGE_FILE_HEADER
     uint32_t NumberOfSymbols;               // number of symbols in the symbol table
     uint16_t SizeOfOptionalHeader;          // size of the optional header in bytes
     uint16_t Characteristics;               // characteristics of the image
-}
+};
 
 
 #define IMAGE_NUMBEROF_DIRECTORY_ENTRIES 16
@@ -272,7 +272,7 @@ struct image_file_header {      // IMAGE_FILE_HEADER
 struct image_data_directory {       // IMAGE_DATA_DIRECTORY
     uint32_t VirtualAddress;
     uint32_t Size;
-}
+};
 
 
 struct image_optional_header64 {    // IMAGE_OPTIONAL_HEADER64
@@ -306,14 +306,14 @@ struct image_optional_header64 {    // IMAGE_OPTIONAL_HEADER64
     uint32_t LoaderFlags;
     uint32_t NumberOfRvaAndSizes;
     struct image_data_directory DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
-}
+};
 
 
 struct image_nt_headers64 {     // IMAGE_NT_HEADERS64
     uint32_t Signature;
     struct image_file_header FileHeader;
     struct image_optional_header64 OptionalHeader;
-}
+};
 /////////////////////////////////
 
 
