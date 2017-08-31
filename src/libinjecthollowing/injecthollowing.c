@@ -472,6 +472,7 @@ event_response_t injector_int3_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) 
     PRINT_DEBUG("Injected PID: %i. TID: %i\n", injector->pid, injector->tid);
     injector->rc = info->regs->rax;
 
+/*
 //////////////////////////////////////////////
     // get EPROCESS from pid
     addr_t eprocess_base = 0;
@@ -518,7 +519,7 @@ event_response_t injector_int3_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) 
     }
 
 //////////////////////////////////////////////
-
+*/
 
 endint:
 
