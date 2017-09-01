@@ -170,6 +170,16 @@ struct injecthollowing {
 };
 
 
+
+/* Windows Structures */
+/* Conversion type:
+    BYTE    --> uint8_t
+    WORD    --> uint16_t
+    DWORD   --> uint32_t
+    HANDLE  --> addr_t
+    ...
+*/
+
 struct startup_info_64 {
     uint32_t cb;
     addr_t lpReserved;

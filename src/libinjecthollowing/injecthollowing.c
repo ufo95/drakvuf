@@ -149,12 +149,12 @@ bool pass_inputs(struct injecthollowing *injector, drakvuf_trap_info_t *info) {
 
     // get thread stack_base
     ctx.addr = gs + injector->offsets[NT_TIB_STACKBASE];
-    if(VMI_FAILURE == vmi_read_addr(vmi, &ctx, &stack_base))
+    if (VMI_FAILURE == vmi_read_addr(vmi, &ctx, &stack_base))
         goto err;
 
     // get thread stack_limit
     ctx.addr = gs + injector->offsets[NT_TIB_STACKLIMIT];
-    if(VMI_FAILURE == vmi_read_addr(vmi, &ctx, &stack_limit))
+    if (VMI_FAILURE == vmi_read_addr(vmi, &ctx, &stack_limit))
         goto err;
 
     // Push input arguments on the stack
@@ -172,19 +172,19 @@ bool pass_inputs(struct injecthollowing *injector, drakvuf_trap_info_t *info) {
 
     // we just going to null out that extra space fully
     ctx.addr = addr;
-    if(VMI_FAILURE == vmi_write_64(vmi, &ctx, &nul64))
+    if (VMI_FAILURE == vmi_write_64(vmi, &ctx, &nul64))
         goto err;
 
     // this string has to be aligned as well!
     addr -= len + 0x8 - (len % 0x8);
     str_addr = addr;
     ctx.addr = addr;
-    if(len != vmi_write(vmi, &ctx, (void*) injector->target_proc, len))
+    if (len != vmi_write(vmi, &ctx, (void*) injector->target_proc, len))
         goto err;
 
     // add null termination
     ctx.addr = addr+len;
-    if(VMI_FAILURE == vmi_write_8(vmi, &ctx, &nul8))
+    if (VMI_FAILURE == vmi_write_8(vmi, &ctx, &nul8))
         goto err;
 
     struct startup_info_64 si;
@@ -197,7 +197,7 @@ bool pass_inputs(struct injecthollowing *injector, drakvuf_trap_info_t *info) {
     addr -= len;
     injector->process_info = addr;
     ctx.addr = addr;
-    if(len != vmi_write(vmi, &ctx, &pi, len))
+    if (len != vmi_write(vmi, &ctx, &pi, len))
         goto err;
 
     // push startup_info local variable on the stack
@@ -205,7 +205,7 @@ bool pass_inputs(struct injecthollowing *injector, drakvuf_trap_info_t *info) {
     addr -= len;
     sip_addr = addr;
     ctx.addr = addr;
-    if(len != vmi_write(vmi, &ctx, &si, len))
+    if (len != vmi_write(vmi, &ctx, &si, len))
         goto err;
 
     //http://www.codemachine.com/presentations/GES2010.TRoy.Slides.pdf
@@ -215,75 +215,88 @@ bool pass_inputs(struct injecthollowing *injector, drakvuf_trap_info_t *info) {
     //5th parameter onwards (if any) passed via the stack
 
     //p10
+    // _Out_ LPPROCESS_INFORMATION lpProcessInformation
     addr -= 0x8;
     ctx.addr = addr;
-    if(VMI_FAILURE == vmi_write_64(vmi, &ctx, &injector->process_info))
+    if (VMI_FAILURE == vmi_write_64(vmi, &ctx, &injector->process_info))
         goto err;
 
     //p9
+    // _In_ LPSTARTUPINFO lpStartupInfo
     addr -= 0x8;
     ctx.addr = addr;
-    if(VMI_FAILURE == vmi_write_64(vmi, &ctx, &sip_addr))
+    if (VMI_FAILURE == vmi_write_64(vmi, &ctx, &sip_addr))
         goto err;
 
     //p8
+    // _In_opt_ LPCTSTR lpCurrentDirectory
     addr -= 0x8;
     ctx.addr = addr;
-    if(VMI_FAILURE == vmi_write_64(vmi, &ctx, &nul64))
+    if (VMI_FAILURE == vmi_write_64(vmi, &ctx, &nul64))
         goto err;
 
     //p7
+    // _In_opt_ LPVOID lpEnvironment
     addr -= 0x8;
     ctx.addr = addr;
-    if(VMI_FAILURE == vmi_write_64(vmi, &ctx, &nul64))
+    if (VMI_FAILURE == vmi_write_64(vmi, &ctx, &nul64))
         goto err;
 
     //p6
+    // _In_ DWORD dwCreationFlags
+    // use flag: CREATE_SUSPENDED = 0x00000004
+    uint64_t flag_create_suspended = 0x4;
     addr -= 0x8;
     ctx.addr = addr;
-    if(VMI_FAILURE == vmi_write_64(vmi, &ctx, &nul64))
+    if (VMI_FAILURE == vmi_write_64(vmi, &ctx, &flag_create_suspended))
         goto err;
 
     //p5
+    // _In_ BOOL bInheritHandles
     addr -= 0x8;
     ctx.addr = addr;
-    if(VMI_FAILURE == vmi_write_64(vmi, &ctx, &nul64))
+    if (VMI_FAILURE == vmi_write_64(vmi, &ctx, &nul64))
         goto err;
 
-    // allocate 0x20 "homing space"
+    // allocate 0x8 * 4 = 0x20 space on the stack for 4 params
+    // 1th-2nd-3rd-4th params are passed in registers
     addr -= 0x8;
     ctx.addr = addr;
-    if(VMI_FAILURE == vmi_write_64(vmi, &ctx, &nul64))
-        goto err;
-
-    addr -= 0x8;
-    ctx.addr = addr;
-    if(VMI_FAILURE == vmi_write_64(vmi, &ctx, &nul64))
+    if (VMI_FAILURE == vmi_write_64(vmi, &ctx, &nul64))
         goto err;
 
     addr -= 0x8;
     ctx.addr = addr;
-    if(VMI_FAILURE == vmi_write_64(vmi, &ctx, &nul64))
+    if (VMI_FAILURE == vmi_write_64(vmi, &ctx, &nul64))
+        goto err;
+
+    addr -= 0x8;
+    ctx.addr = addr;
+    if (VMI_FAILURE == vmi_write_64(vmi, &ctx, &nul64))
     goto err;
 
     addr -= 0x8;
     ctx.addr = addr;
-    if(VMI_FAILURE == vmi_write_64(vmi, &ctx, &nul64))
+    if (VMI_FAILURE == vmi_write_64(vmi, &ctx, &nul64))
         goto err;
 
     //p1
+    // _In_opt_ LPCTSTR lpApplicationName
     info->regs->rcx = 0;
     //p2
+    // _Inout_opt_ LPTSTR lpCommandLine
     info->regs->rdx = str_addr;
     //p3
+    // _In_opt_ LPSECURITY_ATTRIBUTES lpProcessAttributes
     info->regs->r8 = 0;
     //p4
+    // _In_opt_ LPSECURITY_ATTRIBUTES lpThreadAttributes
     info->regs->r9 = 0;
 
     // save the return address
     addr -= 0x8;
     ctx.addr = addr;
-    if(VMI_FAILURE == vmi_write_64(vmi, &ctx, &info->regs->rip))
+    if (VMI_FAILURE == vmi_write_64(vmi, &ctx, &info->regs->rip))
         goto err;
 
 
@@ -469,10 +482,10 @@ event_response_t injector_int3_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) 
         goto endint;
     }
     
-    PRINT_DEBUG("Injected PID: %i. TID: %i\n", injector->pid, injector->tid);
+    PRINT_DEBUG("Injected PID: %u. TID: %u\n", injector->pid, injector->tid);
     injector->rc = info->regs->rax;
 
-/*
+
 //////////////////////////////////////////////
     // get EPROCESS from pid
     addr_t eprocess_base = 0;
@@ -483,34 +496,37 @@ event_response_t injector_int3_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) 
     }
 
     addr_t peb=0;
-    if(VMI_FAILURE == vmi_read_addr_va(vmi, eprocess_base + drakvuf->offsets[EPROCESS_PEB], 0, &peb)) {
+    if (VMI_FAILURE == vmi_read_addr_va(vmi, eprocess_base + injector->offsets[EPROCESS_PEB], 0, &peb)) {
         PRINT_DEBUG("Failed to get PEB from EPROCESS\n");
         injector->rc = 0;
         goto endint;
     }
 
 /////
+/*
     access_context_t ctx = {.translate_mechanism = VMI_TM_PROCESS_DTB};
 
-    if(VMI_FAILURE == vmi_read_addr_va(vmi, eprocess_base + drakvuf->offsets[EPROCESS_PEB], 0, &peb))
+    if(VMI_FAILURE == vmi_read_addr_va(vmi, eprocess_base + injector->offsets[EPROCESS_PEB], 0, &peb))
         return -1;
 
-    if(VMI_FAILURE == vmi_read_addr_va(vmi, eprocess_base + drakvuf->offsets[EPROCESS_PDBASE], 0, &ctx.dtb))
+    if(VMI_FAILURE == vmi_read_addr_va(vmi, eprocess_base + injector->offsets[EPROCESS_PDBASE], 0, &ctx.dtb))
         return -1;
 
-    ctx.addr = peb + drakvuf->offsets[PEB_SESSIONID];
+    ctx.addr = peb + injector->offsets[PEB_SESSIONID];
     if ( VMI_FAILURE == vmi_read_addr(vmi, &ctx, &userid) )
         return -1;
-
+*/
 /////
 
     addr_t image_base_address = 0;
-    if(VMI_FAILURE == vmi_read_addr_va(vmi, peb + drakvuf->offsets[PEB_IMAGEBASADDRESS], 0, &image_base_address)) {
+    if (VMI_FAILURE == vmi_read_addr_va(vmi, peb + injector->offsets[PEB_IMAGEBASADDRESS], 0, &image_base_address)) {
         PRINT_DEBUG("Failed to get ImageBaseAddress from PEB\n");
         injector->rc = 0;
         goto endint;
     }
+    PRINT_DEBUG("ImageBaseAddress: 0x%lx\n", image_base_address);
 
+/*
     // read IMAGE_DOS_HEADER
     struct image_dos_header doshdr = { 0 };
     if ( sizeof(struct image_dos_header) == vmi_read(injector->vmi, &ctx, &pip, sizeof(struct image_dos_header)) )
