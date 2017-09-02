@@ -136,6 +136,7 @@ static const char *offset_names[OFFSET_MAX][2] = {
     [KTHREAD_TRAPFRAME] = { "_KTHREAD", "TrapFrame" },
     [KTRAP_FRAME_RIP] = { "_KTRAP_FRAME", "Rip" },
     [EPROCESS_PEB] = { "_EPROCESS", "Peb" },
+    [EPROCESS_PDBASE] = { "_KPROCESS", "DirectoryTableBase" },
     [PEB_IMAGEBASADDRESS] = { "_PEB", "ImageBaseAddress" },
 };
 

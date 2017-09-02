@@ -502,8 +502,14 @@ event_response_t injector_int3_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) 
         goto endint;
     }
 
+    if (VMI_FAILURE == vmi_read_addr_va(injector->vmi, eprocess_base + injector->offsets[EPROCESS_PDBASE], 0, &ctx.dtb)) {
+        PRINT_DEBUG("Failed to get PDBASE from EPROCESS\n");
+        injector->rc = 0;
+        goto endint;
+    }
+
 /////
-/*
+/*  SAMPLE...
     access_context_t ctx = {.translate_mechanism = VMI_TM_PROCESS_DTB};
 
     if(VMI_FAILURE == vmi_read_addr_va(vmi, eprocess_base + injector->offsets[EPROCESS_PEB], 0, &peb))
@@ -518,8 +524,10 @@ event_response_t injector_int3_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) 
 */
 /////
 
+    ctx.addr = peb + injector->offsets[PEB_IMAGEBASADDRESS];
+
     addr_t image_base_address = 0;
-    if (VMI_FAILURE == vmi_read_addr_va(injector->vmi, peb + injector->offsets[PEB_IMAGEBASADDRESS], 0, &image_base_address)) {
+    if (VMI_FAILURE == vmi_read_addr(injector->vmi, &ctx, &image_base_address)) {
         PRINT_DEBUG("Failed to get ImageBaseAddress from PEB\n");
         injector->rc = 0;
         goto endint;
