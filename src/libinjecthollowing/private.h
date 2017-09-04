@@ -179,7 +179,29 @@ struct injecthollowing {
     WORD    --> uint16_t
     DWORD   --> uint32_t
     HANDLE  --> addr_t
+    LPTSTR  --> addr_t
+    LPBYTE  --> addr_t
+    PSTR    --> addr_t
+    PUCHAR  --> addr_t
+    UCHAR   --> uint8_t
+    ULONGLONG --> uint64_t
     ...
+
+Type                        | S/U | x86    | x64
+----------------------------+-----+--------+-------
+BYTE, BOOLEAN               | U   | 8 bit  | 8 bit
+----------------------------+-----+--------+-------
+SHORT                       | S   | 16 bit | 16 bit
+USHORT, WORD                | U   | 16 bit | 16 bit
+----------------------------+-----+--------+-------
+INT, LONG                   | S   | 32 bit | 32 bit
+UINT, ULONG, DWORD          | U   | 32 bit | 32 bit
+----------------------------+-----+--------+-------
+INT_PTR, LONG_PTR, LPARAM   | S   | 32 bit | 64 bit
+UINT_PTR, ULONG_PTR, WPARAM | U   | 32 bit | 64 bit
+----------------------------+-----+--------+-------
+LONGLONG                    | S   | 64 bit | 64 bit
+ULONGLONG, QWORD            | U   | 64 bit | 64 bit    
 */
 
 struct startup_info_64 {
@@ -265,6 +287,43 @@ struct image_dos_header {       // IMAGE_DOS_HEADER
     uint16_t   e_oeminfo;                   // OEM information; e_oemid specific
     uint16_t   e_res2[10];                  // Reserved words
     uint32_t   e_lfanew;                    // File address of new exe header
+};
+
+
+#define IMAGE_SIZEOF_SHORT_NAME 8
+
+struct image_section_header {      // IMAGE_SECTION_HEADER
+    uint8_t Name[IMAGE_SIZEOF_SHORT_NAME];
+    union {
+        uint32_t PhysicalAddress;
+        uint32_t VirtualSize;
+    } Misc;
+    uint32_t VirtualAddress;
+    uint32_t SizeOfRawData;
+    uint32_t PointerToRawData;
+    uint32_t PointerToRelocations;
+    uint32_t PointerToLinenumbers;
+    uint16_t NumberOfRelocations;
+    uint16_t NumberOfLinenumbers;
+    uint32_t Characteristics;
+};
+
+
+struct loaded_image {      // LOADED_IMAGE
+    addr_t ModuleName;
+    addr_t hFile;
+    addr_t MappedAddress;
+    struct image_nt_headers64 *FileHeader;
+    struct image_section_header *LastRvaSection;
+    uint32_t NumberOfSections;
+    struct image_section_header *Sections;
+    uint32_t Characteristics;
+    uint8_t fSystemImage;
+    uint8_t fDOSImage;
+    uint8_t fReadOnly;
+    uint8_t Version;
+    struct list_entry_64 Links;
+    uint32_t SizeOfImage;
 };
 
 
