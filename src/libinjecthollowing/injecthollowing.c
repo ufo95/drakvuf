@@ -560,7 +560,7 @@ event_response_t injector_int3_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) 
     PRINT_DEBUG("IMAGE SIZEOFHEADERS: 0x%x\n", imgnthdr.OptionalHeader.SizeOfHeaders);
     for (int x = 0; x < imgnthdr.FileHeader.NumberOfSections; x++)
     {
-        PRINT_DEBUG("Reading %s section to IMGBASEADDR+0x%x length 0x%x\n", (&imgsecthdr)[x].Name, (&imgsecthdr)[x].VirtualAddress, (&imgsecthdr)[x].SizeOfRawData);
+        PRINT_DEBUG("Reading %s section to IMGBASEADDR+0x%x length 0x%x\n", imgsecthdr[x].Name, imgsecthdr[x].VirtualAddress, imgsecthdr[x].SizeOfRawData);
     }
 
 //////////////////////////////////////////////
