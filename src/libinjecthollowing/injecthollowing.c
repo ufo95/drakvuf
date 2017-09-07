@@ -584,7 +584,7 @@ event_response_t injector_int3_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) 
         injector->rc = 0;
         goto endint;
     }
-    PRINT_DEBUG("Read %d bytes from inject file %s\n", inject_info.st_size, injector->inject_file);
+    PRINT_DEBUG("Read 0x%x bytes from inject file %s\n", (unsigned int)inject_info.st_size, injector->inject_file);
 
     // read IMAGE_DOS_HEADER
     struct image_dos_header *pdoshdr_inject = (struct image_dos_header *)inject_buffer;
