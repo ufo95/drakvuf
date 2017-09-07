@@ -113,6 +113,9 @@
 #include <signal.h>
 #include <inttypes.h>
 #include <glib.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include "libdrakvuf/libdrakvuf.h"
 #include "private.h"
@@ -396,6 +399,8 @@ event_response_t cr3_callback(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
 
 // trap frame injection
 event_response_t injector_int3_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
+    int inject_fd = 0;
+    void *inject_buffer = NULL;
 
     struct injecthollowing *injector = info->trap->data;
     reg_t cr3 = info->regs->cr3;
@@ -555,8 +560,7 @@ event_response_t injector_int3_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) 
 //////////////////////////////////////////////
 
     // open file to inject
-    int inject_fd = 0;
-    inject_fd = open(injector.inject_file, O_RDONLY);
+    inject_fd = open(injector->inject_file, O_RDONLY);
     if ( inject_fd < 0 )
     {
         PRINT_DEBUG("Failed to open INJECT_FILE\n");
@@ -565,14 +569,13 @@ event_response_t injector_int3_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) 
     }
 
     struct stat inject_info;
-    if ( stat(injector.inject_file, &inject_info) < 0 )
+    if ( stat(injector->inject_file, &inject_info) < 0 )
     {
         PRINT_DEBUG("Failed retrieving information about INJECT_FILE\n");
         injector->rc = 0;
         goto endint;
     }
 
-    void *inject_buffer = NULL;
     inject_buffer = malloc(inject_info.st_size);
 
     if ( read(inject_fd, inject_buffer, inject_info.st_size) < inject_info.st_size )
@@ -581,7 +584,7 @@ event_response_t injector_int3_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) 
         injector->rc = 0;
         goto endint;
     }
-    PRINT_DEBUG("Read %d bytes from inject file %s\n", inject_info.st_size, injector.inject_file);
+    PRINT_DEBUG("Read %d bytes from inject file %s\n", inject_info.st_size, injector->inject_file);
 
     // read IMAGE_DOS_HEADER
     struct image_dos_header *pdoshdr_inject = (struct image_dos_header *)inject_buffer;
@@ -598,9 +601,9 @@ event_response_t injector_int3_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) 
 
 
     PRINT_DEBUG("INJECT SIZEOFHEADERS: 0x%x\n", pimgnthdr_inject->OptionalHeader.SizeOfHeaders);
-    for (int x = 0; x < pimgnthdr_inject->NumberOfSections; x++)
+    for (int x = 0; x < pimgnthdr_inject->FileHeader.NumberOfSections; x++)
     {
-        PRINT_DEBUG("Writing %s section to IMGBASEADDR+0x%p length 0x%x\n", pimgnthdr_inject->Sections[x].Name, pimgnthdr_inject->Sections[x].VirtualAddress, pimgnthdr_inject->Sections[x].SizeOfRawData);
+        PRINT_DEBUG("Writing %s section to IMGBASEADDR+0x%x length 0x%x\n", imgsecthdr_inject[x].Name, imgsecthdr_inject[x].VirtualAddress, imgsecthdr_inject[x].SizeOfRawData);
     }
 
 
