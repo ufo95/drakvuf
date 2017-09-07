@@ -508,22 +508,6 @@ event_response_t injector_int3_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) 
         goto endint;
     }
 
-/////
-/*  SAMPLE...
-    access_context_t ctx = {.translate_mechanism = VMI_TM_PROCESS_DTB};
-
-    if(VMI_FAILURE == vmi_read_addr_va(vmi, eprocess_base + injector->offsets[EPROCESS_PEB], 0, &peb))
-        return -1;
-
-    if(VMI_FAILURE == vmi_read_addr_va(vmi, eprocess_base + injector->offsets[EPROCESS_PDBASE], 0, &ctx.dtb))
-        return -1;
-
-    ctx.addr = peb + injector->offsets[PEB_SESSIONID];
-    if ( VMI_FAILURE == vmi_read_addr(vmi, &ctx, &userid) )
-        return -1;
-*/
-/////
-
     ctx.addr = peb + injector->offsets[PEB_IMAGEBASADDRESS];
 
     addr_t image_base_address = 0;
@@ -570,7 +554,66 @@ event_response_t injector_int3_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) 
 
 //////////////////////////////////////////////
 
+    // open file to inject
+    int inject_fd = 0;
+    inject_fd = open(injector.inject_file, O_RDONLY);
+    if ( inject_fd < 0 )
+    {
+        PRINT_DEBUG("Failed to open INJECT_FILE\n");
+        injector->rc = 0;
+        goto endint;
+    }
+
+    struct stat inject_info;
+    if ( stat(injector.inject_file, &inject_info) < 0 )
+    {
+        PRINT_DEBUG("Failed retrieving information about INJECT_FILE\n");
+        injector->rc = 0;
+        goto endint;
+    }
+
+    void *inject_buffer = NULL;
+    inject_buffer = malloc(inject_info.st_size);
+
+    if ( read(inject_fd, inject_buffer, inject_info.st_size) < inject_info.st_size )
+    {
+        PRINT_DEBUG("Failed reading INJECT_FILE\n");
+        injector->rc = 0;
+        goto endint;
+    }
+    PRINT_DEBUG("Read %d bytes from inject file %s\n", inject_info.st_size, injector.inject_file);
+
+    // read IMAGE_DOS_HEADER
+    struct image_dos_header *pdoshdr_inject = (struct image_dos_header *)inject_buffer;
+    PRINT_DEBUG("INJECT IMAGE_DOS_HEADER->e_magic: 0x%x\n", pdoshdr_inject->e_magic);
+
+    // read IMAGE_NT_HEADERS64
+    struct image_nt_headers64 *pimgnthdr_inject = (struct image_nt_headers64 *)(inject_buffer + pdoshdr_inject->e_lfanew);
+    PRINT_DEBUG("INJECT IMAGE_NT_HEADERS64->Signature: 0x%x\n", pimgnthdr_inject->Signature);
+    PRINT_DEBUG("INJECT IMAGE_NT_HEADERS64->FileHeader->NumberOfSections: 0x%x\n", pimgnthdr_inject->FileHeader.NumberOfSections);
+
+    // read IMAGE_SECTION_HEADER
+    struct image_section_header *imgsecthdr_inject = (struct image_section_header *)(inject_buffer + pdoshdr_inject->e_lfanew + sizeof(struct image_nt_headers64));
+    PRINT_DEBUG("INJECT IMAGE_SECTION_HEADER->Name: %s\n", imgsecthdr_inject->Name);
+
+
+    PRINT_DEBUG("INJECT SIZEOFHEADERS: 0x%x\n", pimgnthdr_inject->OptionalHeader.SizeOfHeaders);
+    for (int x = 0; x < pimgnthdr_inject->NumberOfSections; x++)
+    {
+        PRINT_DEBUG("Writing %s section to IMGBASEADDR+0x%p length 0x%x\n", pimgnthdr_inject->Sections[x].Name, pimgnthdr_inject->Sections[x].VirtualAddress, pimgnthdr_inject->Sections[x].SizeOfRawData);
+    }
+
+
+//////////////////////////////////////////////
+
+
+
 endint:
+    if (inject_fd)
+        close(inject_fd);
+
+    if (inject_buffer)
+        free(inject_buffer);
 
     injector->hijacked = 0;
 
@@ -580,7 +623,7 @@ endint:
 }
 
 
-int injecthollowing_start_app(drakvuf_t drakvuf, vmi_pid_t pid, uint32_t tid, const char *app) {
+int injecthollowing_start_app(drakvuf_t drakvuf, vmi_pid_t pid, uint32_t tid, const char *injectfile, const char *hollowfile) {
 
     struct injecthollowing injector = { 0 };
     injector.drakvuf = drakvuf;
@@ -588,7 +631,8 @@ int injecthollowing_start_app(drakvuf_t drakvuf, vmi_pid_t pid, uint32_t tid, co
     injector.rekall_profile = drakvuf_get_rekall_profile(drakvuf);
     injector.target_pid = pid;
     injector.target_tid = tid;
-    injector.target_proc = app;
+    injector.target_proc = hollowfile;
+    injector.inject_file = injectfile;
 
     // get page mode
     injector.is32bit = (vmi_get_page_mode(injector.vmi, 0) == VMI_PM_IA32E) ? 0 : 1;
@@ -617,7 +661,7 @@ int injecthollowing_start_app(drakvuf_t drakvuf, vmi_pid_t pid, uint32_t tid, co
     }
 
     PRINT_DEBUG("Target PID %u with DTB 0x%lx to start '%s'\n", pid,
-                injector.target_cr3, app);
+                injector.target_cr3, hollowfile);
 
     // get EPROCESS from pid
     addr_t eprocess_base = 0;

@@ -118,8 +118,8 @@ static void close_handler(int sig) {
 
 int main(int argc, char** argv)
 {
-    if (argc < 5) {
-        printf("Usage: %s <rekall profile> <domain> <pid> <app> [tid]\n", argv[0]);
+    if (argc < 6) {
+        printf("Usage: %s <rekall profile> <domain> <injectfile> <hollowfile> <targetpid> [targettid]\n", argv[0]);
         printf("\t<required> [optional]\n");
         return 1;
     }
@@ -127,13 +127,14 @@ int main(int argc, char** argv)
     int rc = 0;
     const char *rekall_profile = argv[1];
     const char *domain = argv[2];
-    vmi_pid_t pid = atoi(argv[3]);
+    char *injectfile = argv[3];
+    char *hollowfile = argv[4];
+    vmi_pid_t pid = atoi(argv[5]);
     uint32_t tid = 0;
-    char *app = argv[4];
     bool verbose = 0;
 
-    if ( argc == 6 )
-        tid = atoi(argv[5]);
+    if ( argc == 7 )
+        tid = atoi(argv[6]);
 
 #ifdef DRAKVUF_DEBUG
     verbose = 1;
@@ -154,9 +155,10 @@ int main(int argc, char** argv)
         return rc;
     }
 
-    if (pid > 0 && app) {
-        printf("Injector starting %s through PID %u TID: %u\n", app, pid, tid);
-        rc = injecthollowing_start_app(drakvuf, pid, tid, app);
+    if (pid > 0 && injectfile && hollowfile) {
+        printf("Injector starting %s through PID %u TID: %u (hollow %s)\n", 
+            injectfile, pid, tid, hollowfile);
+        rc = injecthollowing_start_app(drakvuf, pid, tid, injectfile, hollowfile);
 
         if (!rc) {
             printf("Process startup failed\n");

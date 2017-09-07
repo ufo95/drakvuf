@@ -145,6 +145,7 @@ static const char *offset_names[OFFSET_MAX][2] = {
 
 struct injecthollowing {
     // Inputs:
+    const char *inject_file;
     const char *target_proc;
     reg_t target_cr3;
     vmi_pid_t target_pid;
