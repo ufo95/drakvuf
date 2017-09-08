@@ -105,6 +105,21 @@
 #ifndef LIBINJECTHOLLOWING_PRIVATE_H
 #define LIBINJECTHOLLOWING_PRIVATE_H
 
+/******************************************/
+
+#include <config.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <inttypes.h>
+#include <glib.h>
+#include <libvmi/libvmi.h>
+#include <libvmi/events.h>
+
+#include <libdrakvuf/libdrakvuf.h>
+
+#include "libinjecthollowing.h"
+#include "../xen_helper/xen_helper.h"
+
 #ifdef DRAKVUF_DEBUG
 
 extern bool verbose;
@@ -164,6 +179,11 @@ struct injecthollowing {
     drakvuf_trap_t bp, cr3_event;
 
     size_t offsets[OFFSET_MAX];
+
+    xen_interface_t *xen;
+    char *dom_name;
+    domid_t domID;
+    xen_pfn_t max_gpfn;
 
     // Results:
     reg_t cr3;

@@ -111,9 +111,12 @@ extern "C" {
 
 #pragma GCC visibility push(default)
 
+#include <libvmi/libvmi.h>
+#include <libvmi/events.h>
 #include <libdrakvuf/libdrakvuf.h>
 
 int injecthollowing_start_app(drakvuf_t drakvuf,
+                              const char *domain,
                               vmi_pid_t pid,
                               uint32_t tid, // optional, if tid=0 the first thread that gets scheduled is used
                               const char *injectfile,

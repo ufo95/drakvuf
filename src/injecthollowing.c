@@ -107,8 +107,8 @@
 #include <signal.h>
 #include <libvmi/libvmi.h>
 
-#include <libdrakvuf/libdrakvuf.h>
-#include <libinjecthollowing/libinjecthollowing.h>
+#include "libinjecthollowing.h"
+#include "private.h"
 
 static drakvuf_t drakvuf;
 
@@ -158,7 +158,7 @@ int main(int argc, char** argv)
     if (pid > 0 && injectfile && hollowfile) {
         printf("Injector starting %s through PID %u TID: %u (hollow %s)\n", 
             injectfile, pid, tid, hollowfile);
-        rc = injecthollowing_start_app(drakvuf, pid, tid, injectfile, hollowfile);
+        rc = injecthollowing_start_app(drakvuf, domain, pid, tid, injectfile, hollowfile);
 
         if (!rc) {
             printf("Process startup failed\n");

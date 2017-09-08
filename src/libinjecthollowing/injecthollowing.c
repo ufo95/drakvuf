@@ -117,7 +117,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "libdrakvuf/libdrakvuf.h"
+#include "libinjecthollowing.h"
 #include "private.h"
 
 
@@ -622,10 +622,10 @@ event_response_t injector_int3_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) 
         }
         PRINT_DEBUG("  pagenum: 0x%x\n", pagenum);
 
-        for (int y = 0; y < pagenum; y++)
+        for (uint32_t y = 0; y < pagenum; y++)
         {
-            xen_pfn_t inject_gfn = ++(drakvuf->max_gpfn);
-            int rc = xc_domain_populate_physmap_exact(drakvuf->xen->xc, drakvuf->domID, 1, 0, 0, &inject_gfn);
+            xen_pfn_t inject_gfn = ++(injector->max_gpfn);
+            int rc = xc_domain_populate_physmap_exact(injector->xen->xc, injector->domID, 1, 0, 0, &inject_gfn);
             PRINT_DEBUG("  physmap populated? %i\n", rc);
             if (rc < 0) {
                 // TODO: Clean everything before exit
@@ -634,7 +634,7 @@ event_response_t injector_int3_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) 
                 goto endint;
             }
 
-            if ( VMI_PS_4KB == vmi_write_pa(drakvuf->vmi, inject_gfn<<12, &inject_buffer[imgsecthdr_inject[x].PointerToRawData + y*VMI_PS_4KB], VMI_PS_4KB) )
+            if ( VMI_PS_4KB == vmi_write_pa(injector->vmi, inject_gfn<<12, &inject_buffer[imgsecthdr_inject[x].PointerToRawData + y*VMI_PS_4KB], VMI_PS_4KB) )
                 PRINT_DEBUG("  copied buffer in page #0x%x\n", y);
             else {
                 // TODO: Clean everything before exit
@@ -645,7 +645,7 @@ event_response_t injector_int3_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) 
 
             //test for debug
             uint8_t b[VMI_PS_4KB] = {0};
-            if(VMI_PS_4KB != vmi_read_pa(drakvuf->vmi, inject_gfn<<12, &b, VMI_PS_4KB))
+            if(VMI_PS_4KB != vmi_read_pa(injector->vmi, inject_gfn<<12, &b, VMI_PS_4KB))
             {
                 // TODO: Clean everything before exit
                 PRINT_DEBUG("Failed vmi_read_pa()\n");
@@ -653,8 +653,8 @@ event_response_t injector_int3_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) 
                 goto endint;
             }
             uint8_t t = (uint8_t *)&inject_buffer[imgsecthdr_inject[x].PointerToRawData + y*VMI_PS_4KB];
-            PRINT_DEBUG("  source: %x %x %x %x %x %x %x %x\n", t, t+1, t+2, t+3, t+4, t+5, t+6, t+7);
-            PRINT_DEBUG("  dest: %x %x %x %x %x %x %x %x\n", b, b+1, b+2, b+3, b+4, b+5, b+6, b+7);
+            PRINT_DEBUG("  source: %x %x %x %x %x %x %x %x\n", t[0], t[1], t[2], t[3], t[4], t[5], t[6], t[7]);
+            PRINT_DEBUG("  dest: %x %x %x %x %x %x %x %x\n", b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7]);
         }
     }
 
@@ -678,7 +678,7 @@ endint:
 }
 
 
-int injecthollowing_start_app(drakvuf_t drakvuf, vmi_pid_t pid, uint32_t tid, const char *injectfile, const char *hollowfile) {
+int injecthollowing_start_app(drakvuf_t drakvuf, const char *domain, vmi_pid_t pid, uint32_t tid, const char *injectfile, const char *hollowfile) {
 
     struct injecthollowing injector = { 0 };
     injector.drakvuf = drakvuf;
@@ -688,6 +688,19 @@ int injecthollowing_start_app(drakvuf_t drakvuf, vmi_pid_t pid, uint32_t tid, co
     injector.target_tid = tid;
     injector.target_proc = hollowfile;
     injector.inject_file = injectfile;
+
+    // init xen
+    if ( !xen_init_interface(&(injector.xen)) ) {
+        PRINT_DEBUG("Error init xen interface\n");
+        goto done;
+    }
+    get_dom_info(injector.xen, domain, &(injector.domID), &(injector.dom_name));
+    domid_t test = ~0;
+    if ( injector.domID == test ) {
+        PRINT_DEBUG("Error getting xen domainID\n");
+        goto done;
+    }
+
 
     // get page mode
     injector.is32bit = (vmi_get_page_mode(injector.vmi, 0) == VMI_PM_IA32E) ? 0 : 1;
