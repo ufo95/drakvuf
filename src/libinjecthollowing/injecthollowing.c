@@ -633,8 +633,8 @@ event_response_t injector_int3_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) 
                 injector->rc = 0;
                 goto endint;
             }
-
-            if ( VMI_PS_4KB == vmi_write_pa(injector->vmi, inject_gfn<<12, &inject_buffer[imgsecthdr_inject[x].PointerToRawData + y*VMI_PS_4KB], VMI_PS_4KB) )
+//reference inject_buffer ?!?
+            if ( VMI_PS_4KB == vmi_write_pa(injector->vmi, inject_gfn<<12, inject_buffer + imgsecthdr_inject[x].PointerToRawData + y*VMI_PS_4KB, VMI_PS_4KB) )
                 PRINT_DEBUG("  copied buffer in page #0x%x\n", y);
             else {
                 // TODO: Clean everything before exit
@@ -652,7 +652,7 @@ event_response_t injector_int3_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) 
                 injector->rc = 0;
                 goto endint;
             }
-            uint8_t t = (uint8_t *)&inject_buffer[imgsecthdr_inject[x].PointerToRawData + y*VMI_PS_4KB];
+            uint8_t *t = (uint8_t *)(inject_buffer + imgsecthdr_inject[x].PointerToRawData + y*VMI_PS_4KB);
             PRINT_DEBUG("  source: %x %x %x %x %x %x %x %x\n", t[0], t[1], t[2], t[3], t[4], t[5], t[6], t[7]);
             PRINT_DEBUG("  dest: %x %x %x %x %x %x %x %x\n", b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7]);
         }
