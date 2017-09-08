@@ -603,13 +603,59 @@ event_response_t injector_int3_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) 
 
     // read IMAGE_SECTION_HEADER
     struct image_section_header *imgsecthdr_inject = (struct image_section_header *)(inject_buffer + pdoshdr_inject->e_lfanew + sizeof(struct image_nt_headers64));
-    PRINT_DEBUG("INJECT IMAGE_SECTION_HEADER->Name: %s\n", imgsecthdr_inject->Name);
-
 
     PRINT_DEBUG("INJECT SIZEOFHEADERS: 0x%x\n", pimgnthdr_inject->OptionalHeader.SizeOfHeaders);
     for (int x = 0; x < pimgnthdr_inject->FileHeader.NumberOfSections; x++)
     {
         PRINT_DEBUG("Writing %s section to IMGBASEADDR+0x%x length 0x%x\n", imgsecthdr_inject[x].Name, imgsecthdr_inject[x].VirtualAddress, imgsecthdr_inject[x].SizeOfRawData);
+
+        uint32_t pagenum = 0;
+        if (imgsecthdr_inject[x].SizeOfRawData <= VMI_PS_4KB)
+            pagenum = 1;
+        else {
+            uint32_t paged = (uint32_t)imgsecthdr_inject[x].SizeOfRawData / VMI_PS_4KB;
+            uint32_t pagem = (uint32_t)imgsecthdr_inject[x].SizeOfRawData % VMI_PS_4KB;
+            if (pagem == 0)
+                pagenum = paged;
+            else
+                pagenum = paged++;
+        }
+        PRINT_DEBUG("  pagenum: 0x%x\n", pagenum);
+
+        for (int y = 0; y < pagenum; y++)
+        {
+            xen_pfn_t inject_gfn = ++(drakvuf->max_gpfn);
+            int rc = xc_domain_populate_physmap_exact(drakvuf->xen->xc, drakvuf->domID, 1, 0, 0, &inject_gfn);
+            PRINT_DEBUG("  physmap populated? %i\n", rc);
+            if (rc < 0) {
+                // TODO: Clean everything before exit
+                PRINT_DEBUG("Failed xc_domain_populate_physmap_exact()\n");
+                injector->rc = 0;
+                goto endint;
+            }
+
+            if ( VMI_PS_4KB == vmi_write_pa(drakvuf->vmi, inject_gfn<<12, &inject_buffer[imgsecthdr_inject[x].PointerToRawData + y*VMI_PS_4KB], VMI_PS_4KB) )
+                PRINT_DEBUG("  copied buffer in page #0x%x\n", y);
+            else {
+                // TODO: Clean everything before exit
+                PRINT_DEBUG("Failed vmi_write_pa()\n");
+                injector->rc = 0;
+                goto endint;
+            }
+
+            //test for debug
+            uint8_t b[VMI_PS_4KB] = {0};
+            if(VMI_PS_4KB != vmi_read_pa(drakvuf->vmi, inject_gfn<<12, &b, VMI_PS_4KB))
+            {
+                // TODO: Clean everything before exit
+                PRINT_DEBUG("Failed vmi_read_pa()\n");
+                injector->rc = 0;
+                goto endint;
+            }
+            uint8_t t = (uint8_t *)&inject_buffer[imgsecthdr_inject[x].PointerToRawData + y*VMI_PS_4KB];
+            PRINT_DEBUG("  source: %x %x %x %x %x %x %x %x\n", t, t+1, t+2, t+3, t+4, t+5, t+6, t+7);
+            PRINT_DEBUG("  dest: %x %x %x %x %x %x %x %x\n", b, b+1, b+2, b+3, b+4, b+5, b+6, b+7);
+        }
     }
 
 
