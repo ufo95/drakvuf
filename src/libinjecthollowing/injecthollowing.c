@@ -546,9 +546,9 @@ event_response_t injector_int3_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) 
     PRINT_DEBUG("IMAGE_NT_HEADERS64->Signature: 0x%x\n", imgnthdr.Signature);
     PRINT_DEBUG("IMAGE_NT_HEADERS64->FileHeader->NumberOfSections: 0x%x\n", imgnthdr.FileHeader.NumberOfSections);
 
-//TODO read array of NumberOfSections
     // read IMAGE_SECTION_HEADER
-    struct image_section_header imgsecthdr[imgnthdr.FileHeader.NumberOfSections];
+    struct image_section_header *imgsecthdr;
+    imgsecthdr = malloc(sizeof(struct image_section_header)*imgnthdr.FileHeader.NumberOfSections);
     ctx.addr = image_base_address + doshdr.e_lfanew + sizeof(struct image_nt_headers64);
     if ( (sizeof(struct image_section_header)*imgnthdr.FileHeader.NumberOfSections) != vmi_read(injector->vmi, &ctx, imgsecthdr, sizeof(struct image_section_header)*imgnthdr.FileHeader.NumberOfSections) )
     {
