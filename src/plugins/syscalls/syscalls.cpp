@@ -427,7 +427,17 @@ static event_response_t win_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) {
                             vmi_free_unicode_str(us);
                         }
                     }
-
+/*
+                    if ( wsc->args[i].type == PLARGE_INTEGER ) {
+                      if ( (val > 0) && (s->reg_size == 8) ) {
+                        ctx.addr = val;
+                        uint64_t maxsize;
+                        if ( VMI_FAILURE != vmi_read_64(vmi, &ctx, (uint64_t*)&maxsize) ) {
+                            printf(" -> 0x%lx", maxsize);
+                        }
+                      }
+                    }
+*/
                     if ( !strcmp(wsc->args[i].name, "FileHandle") ) {
                         unicode_string_t *us = get_filename_from_handle(s, drakvuf, info, vmi, &ctx, val);
 

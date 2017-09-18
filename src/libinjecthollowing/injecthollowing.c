@@ -618,7 +618,7 @@ event_response_t injector_int3_cb(drakvuf_t drakvuf, drakvuf_trap_info_t *info) 
             if (pagem == 0)
                 pagenum = paged;
             else
-                pagenum = paged++;
+                pagenum = paged + 1;
         }
         PRINT_DEBUG("  pagenum: 0x%x\n", pagenum);
 

@@ -107,8 +107,8 @@
 #include <signal.h>
 #include <libvmi/libvmi.h>
 
-#include "libinjecthollowing.h"
-#include "private.h"
+#include "libinjecthollowing/libinjecthollowing.h"
+//#include "libinjecthollowing/private.h"
 
 static drakvuf_t drakvuf;
 
