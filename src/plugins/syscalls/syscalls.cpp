@@ -483,7 +483,10 @@ static GSList* create_trap_config(drakvuf_t drakvuf, syscalls *s, symbols_t *sym
             const struct symbol *symbol = &symbols->symbols[i];
 
             if (strncmp(symbol->name, "Nt", 2))
-                continue;
+                if (strncmp(symbol->name, "Mm", 2))
+                    if (strncmp(symbol->name, "Mi", 2))
+                        if (strncmp(symbol->name, "Psp", 3))
+                            continue;
             //if (strcmp(symbol->name, "NtCallbackReturn"))
             //    continue;
 
