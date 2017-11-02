@@ -1,6 +1,6 @@
 /*********************IMPORTANT DRAKVUF LICENSE TERMS***********************
  *                                                                         *
- * DRAKVUF (C) 2014-2016 Tamas K Lengyel.                                  *
+ * DRAKVUF (C) 2014-2017 Tamas K Lengyel.                                  *
  * Tamas K Lengyel is hereinafter referred to as the author.               *
  * This program is free software; you may redistribute and/or modify it    *
  * under the terms of the GNU General Public License as published by the   *
@@ -105,8 +105,10 @@
 #ifndef DRAKVUF_PLUGINS_H
 #define DRAKVUF_PLUGINS_H
 
+#include <vector>
 #include <config.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <libdrakvuf/libdrakvuf.h>
 
 /***************************************************************************/
@@ -163,19 +165,36 @@ static const char* drakvuf_plugin_names[] =
     [PLUGIN_REGMON] = "regmon",
 };
 
-static const bool drakvuf_plugin_os_support[__DRAKVUF_PLUGIN_LIST_MAX][VMI_OS_WINDOWS+1] =
+struct os_support
 {
-    [PLUGIN_SYSCALLS]   = { [VMI_OS_WINDOWS] = 1, [VMI_OS_LINUX] = 1 },
-    [PLUGIN_POOLMON]    = { [VMI_OS_WINDOWS] = 1, [VMI_OS_LINUX] = 0 },
-    [PLUGIN_FILETRACER] = { [VMI_OS_WINDOWS] = 1, [VMI_OS_LINUX] = 0 },
-    [PLUGIN_FILEDELETE] = { [VMI_OS_WINDOWS] = 1, [VMI_OS_LINUX] = 0 },
-    [PLUGIN_OBJMON]     = { [VMI_OS_WINDOWS] = 1, [VMI_OS_LINUX] = 0 },
-    [PLUGIN_EXMON]      = { [VMI_OS_WINDOWS] = 1, [VMI_OS_LINUX] = 0 },
-    [PLUGIN_SSDTMON]    = { [VMI_OS_WINDOWS] = 1, [VMI_OS_LINUX] = 0 },
-    [PLUGIN_DEBUGMON]   = { [VMI_OS_WINDOWS] = 1, [VMI_OS_LINUX] = 1 },
-    [PLUGIN_CPUIDMON]   = { [VMI_OS_WINDOWS] = 1, [VMI_OS_LINUX] = 1 },
-    [PLUGIN_SOCKETMON]     = { [VMI_OS_WINDOWS] = 1, [VMI_OS_LINUX] = 0 },
-    [PLUGIN_REGMON]     = { [VMI_OS_WINDOWS] = 1, [VMI_OS_LINUX] = 0 },
+    bool windows_support;
+    bool linux_support;
+} __attribute__((packed));
+
+static const std::vector<struct os_support> drakvuf_plugin_os_support =
+{
+    //PLUGIN_SYSCALLS
+    { .windows_support = 1, .linux_support = 1 },
+    //PLUGIN_POOLMON
+    { .windows_support = 1, .linux_support = 0 },
+    //PLUGIN_FILETRACER
+    { .windows_support = 1, .linux_support = 0 },
+    //PLUGIN_FILEDELETE
+    { .windows_support = 1, .linux_support = 0 },
+    //PLUGIN_OBJMON
+    { .windows_support = 1, .linux_support = 0 },
+    //PLUGIN_EXMON
+    { .windows_support = 1, .linux_support = 0 },
+    //PLUGIN_SSDTMON
+    { .windows_support = 1, .linux_support = 0 },
+    //PLUGIN_DEBUGMON
+    { .windows_support = 1, .linux_support = 1 },
+    //PLUGIN_CPUIDMON
+    { .windows_support = 1, .linux_support = 1 },
+    //PLUGIN_SOCKETMON
+    { .windows_support = 1, .linux_support = 0 },
+    //PLUGIN_REGMON
+    { .windows_support = 1, .linux_support = 0 },
 };
 
 class plugin
@@ -190,10 +209,15 @@ private:
     drakvuf_t drakvuf;
     output_format_t output;
     os_t os;
-    plugin* plugins[__DRAKVUF_PLUGIN_LIST_MAX] = { [0 ... __DRAKVUF_PLUGIN_LIST_MAX-1] = NULL };
+    std::vector<plugin*> plugins;
 
 public:
-    drakvuf_plugins(drakvuf_t drakvuf, output_format_t output, os_t os);
+    drakvuf_plugins(drakvuf_t drakvuf, output_format_t output, os_t os) :
+        drakvuf{drakvuf},
+        output{output},
+        os{os},
+        plugins(__DRAKVUF_PLUGIN_LIST_MAX)
+        {};
     ~drakvuf_plugins();
     int start(drakvuf_plugin_t plugin, const void* config);
 };

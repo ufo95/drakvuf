@@ -107,8 +107,9 @@
 
 static const char* userid[] =
 {
-    [VMI_OS_WINDOWS] = "SessionID",
-    [VMI_OS_LINUX] = "UID"
+    "",
+    "UID",
+    "SessionID",
 };
 
 #define USERIDSTR(drakvuf) (userid[drakvuf_get_os_type(drakvuf)])

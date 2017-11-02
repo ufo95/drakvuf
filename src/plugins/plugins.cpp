@@ -116,13 +116,6 @@
 #include "socketmon/socketmon.h"
 #include "regmon/regmon.h"
 
-drakvuf_plugins::drakvuf_plugins(const drakvuf_t drakvuf, output_format_t output, os_t os)
-{
-    this->drakvuf = drakvuf;
-    this->output = output;
-    this->os = os;
-}
-
 drakvuf_plugins::~drakvuf_plugins()
 {
     int i;
@@ -139,7 +132,9 @@ int drakvuf_plugins::start(const drakvuf_plugin_t plugin_id,
     {
         PRINT_DEBUG("Starting plugin %s\n", drakvuf_plugin_names[plugin_id]);
 
-        if ( !drakvuf_plugin_os_support[plugin_id][this->os] )
+        if ( (VMI_OS_WINDOWS == this->os && !drakvuf_plugin_os_support[plugin_id].windows_support)
+            ||
+             (VMI_OS_LINUX == this->os && !drakvuf_plugin_os_support[plugin_id].linux_support) )
             return 0;
 
         try

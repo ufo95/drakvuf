@@ -111,7 +111,7 @@ AC_CONFIG_MACRO_DIR([m4])
 
 AC_PROG_CC_STDC
 AC_PROG_CXX(clang++)
-AX_CXX_COMPILE_STDCXX_11
+AX_CXX_COMPILE_STDCXX(11, noext)
 
 ######################################################
 
