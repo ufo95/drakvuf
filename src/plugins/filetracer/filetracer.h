@@ -102,6 +102,7 @@
  *                                                                         *
  ***************************************************************************/
 
+#ifdef ENABLE_PLUGIN_FILETRACER
 #ifndef FILETRACER_H
 #define FILETRACER_H
 
@@ -132,4 +133,5 @@ public:
     ~filetracer();
 };
 
+#endif
 #endif

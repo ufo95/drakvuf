@@ -102,6 +102,7 @@
  *                                                                         *
  ***************************************************************************/
 
+#ifdef ENABLE_PLUGIN_DEBUGMON
 #ifndef DEBUGMON_H
 #define DEBUGMON_H
 
@@ -119,4 +120,5 @@ public:
     ~debugmon();
 };
 
+#endif
 #endif

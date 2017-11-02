@@ -102,6 +102,7 @@
  *                                                                         *
  ***************************************************************************/
 
+#ifdef ENABLE_PLUGIN_FILEDELETE
 #ifndef FILEDELETE_H
 #define FILEDELETE_H
 
@@ -133,4 +134,5 @@ public:
     ~filedelete();
 };
 
+#endif
 #endif

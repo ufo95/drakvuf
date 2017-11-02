@@ -102,6 +102,7 @@
  *                                                                         *
  ***************************************************************************/
 
+#ifdef ENABLE_PLUGIN_POOLMON
 #ifndef POOLMON_H
 #define POOLMON_H
 
@@ -119,4 +120,5 @@ public:
     ~poolmon();
 };
 
+#endif
 #endif

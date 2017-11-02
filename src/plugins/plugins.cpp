@@ -104,6 +104,7 @@
 
 #include <stdarg.h>
 #include "plugins.h"
+#include "private.h"
 #include "syscalls/syscalls.h"
 #include "poolmon/poolmon.h"
 #include "filetracer/filetracer.h"

@@ -171,10 +171,10 @@ struct os_support
     bool linux_support;
 } __attribute__((packed));
 
-static const std::vector<struct os_support> drakvuf_plugin_os_support =
+static const struct os_support drakvuf_plugin_os_support[] =
 {
     //PLUGIN_SYSCALLS
-    { .windows_support = 1, .linux_support = 1 },
+    [PLUGIN_SYSCALLS] = { .windows_support = 1, .linux_support = 1 },
     //PLUGIN_POOLMON
     { .windows_support = 1, .linux_support = 0 },
     //PLUGIN_FILETRACER
@@ -213,9 +213,9 @@ private:
 
 public:
     drakvuf_plugins(drakvuf_t drakvuf, output_format_t output, os_t os) :
-        drakvuf{drakvuf},
-        output{output},
-        os{os},
+        drakvuf(drakvuf),
+        output(output),
+        os(os),
         plugins(__DRAKVUF_PLUGIN_LIST_MAX)
         {};
     ~drakvuf_plugins();

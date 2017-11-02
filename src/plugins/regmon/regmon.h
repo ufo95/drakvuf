@@ -102,6 +102,7 @@
  *                                                                         *
  ***************************************************************************/
 
+#ifdef ENABLE_PLUGIN_REGMON
 #ifndef REGMON_H
 #define REGMON_H
 
@@ -130,4 +131,5 @@ public:
     ~regmon();
 };
 
+#endif
 #endif

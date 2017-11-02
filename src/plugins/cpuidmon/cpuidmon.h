@@ -102,6 +102,7 @@
  *                                                                         *
  ***************************************************************************/
 
+#ifdef ENABLE_PLUGIN_CPUIDMON
 #ifndef CPUIDMON_H
 #define CPUIDMON_H
 
@@ -120,4 +121,5 @@ public:
     ~cpuidmon();
 };
 
+#endif
 #endif

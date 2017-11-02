@@ -102,6 +102,7 @@
  *                                                                         *
  ***************************************************************************/
 
+#ifdef ENABLE_PLUGIN_EXMON
 #ifndef EXMON_H
 #define EXMON_H
 
@@ -130,4 +131,5 @@ public:
     ~exmon();
 };
 
+#endif
 #endif

@@ -102,6 +102,7 @@
  *                                                                         *
  ***************************************************************************/
 
+#ifdef ENABLE_PLUGIN_OBJMON
 #ifndef OBJMON_H
 #define OBJMON_H
 
@@ -129,4 +130,5 @@ public:
     ~objmon();
 };
 
+#endif
 #endif

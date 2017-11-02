@@ -102,6 +102,7 @@
  *                                                                         *
  ***************************************************************************/
 
+#ifdef ENABLE_PLUGIN_SOCKETMON
 #ifndef SOCKETMON_H
 #define SOCKETMON_H
 
@@ -130,4 +131,5 @@ public:
     ~socketmon();
 };
 
+#endif
 #endif

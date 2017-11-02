@@ -102,6 +102,7 @@
  *                                                                         *
  ***************************************************************************/
 
+#ifdef ENABLE_PLUGIN_SYSCALLS
 #ifndef SYSCALLS_H
 #define SYSCALLS_H
 
@@ -124,4 +125,5 @@ public:
     ~syscalls();
 };
 
+#endif
 #endif

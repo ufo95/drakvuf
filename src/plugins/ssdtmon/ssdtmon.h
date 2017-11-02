@@ -102,6 +102,7 @@
  *                                                                         *
  ***************************************************************************/
 
+#ifdef ENABLE_PLUGIN_SSDTMON
 #ifndef SSDTMON_H
 #define SSDTMON_H
 
@@ -123,4 +124,5 @@ public:
     ~ssdtmon();
 };
 
+#endif
 #endif
