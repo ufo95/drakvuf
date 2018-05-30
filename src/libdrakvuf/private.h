@@ -170,6 +170,7 @@ struct drakvuf
     vmi_event_t mem_event;
     vmi_event_t debug_event;
     vmi_event_t cpuid_event;
+    vmi_event_t emul_event;
     vmi_event_t* step_event[16];
     drakvuf_trap_t guard0;
 

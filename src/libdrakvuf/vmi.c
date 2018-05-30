@@ -552,7 +552,18 @@ event_response_t int3_cb(vmi_instance_t vmi, vmi_event_t* event)
     // Check if we have traps still active on this breakpoint
     if ( g_hash_table_lookup(drakvuf->breakpoint_lookup_pa, &pa) )
     {
-        PRINT_DEBUG("Switching altp2m and to singlestep on vcpu %u\n", event->vcpu_id);
+        emul_insn_t emul = { .dont_free = 1 };
+
+        if ( VMI_SUCCESS == vmi_read_pa(vmi, pa, 16, (void*)&emul.data, NULL) )
+        {
+            event->emul_insn = &emul;
+            return rsp | VMI_EVENT_RESPONSE_SET_EMUL_INSN;
+        }
+
+        /* We should never get here but just in case */
+        PRINT_DEBUG("Failed to read insn buffer from 0x%lx, switching altp2m views instead\n",
+                    pa);
+
         event->slat_id = 0;
         drakvuf->step_event[event->vcpu_id]->callback = vmi_reset_trap;
         drakvuf->step_event[event->vcpu_id]->data = drakvuf;
@@ -561,7 +572,7 @@ event_response_t int3_cb(vmi_instance_t vmi, vmi_event_t* event)
                VMI_EVENT_RESPONSE_VMM_PAGETABLE_ID;
     }
 
-    return rsp;
+    return 0;
 }
 
 event_response_t cr3_cb(vmi_instance_t vmi, vmi_event_t* event)
@@ -734,6 +745,23 @@ event_response_t cpuid_cb(vmi_instance_t vmi, vmi_event_t* event)
         event->x86_regs->rip += event->cpuid_event.insn_length;
 
     return rsp | VMI_EVENT_RESPONSE_SET_REGISTERS;
+}
+
+event_response_t emul_event_cb(vmi_instance_t vmi, vmi_event_t* event)
+{
+    UNUSED(vmi);
+
+    drakvuf_t drakvuf = (drakvuf_t)event->data;
+    event->slat_id = drakvuf->altp2m_idr;
+
+    PRINT_DEBUG("Switching to altp2m view %u on vCPU %u in response to failed emulation\n",
+                event->slat_id, event->vcpu_id);
+
+    drakvuf->step_event[event->vcpu_id]->callback = vmi_reset_trap;
+    drakvuf->step_event[event->vcpu_id]->data = drakvuf;
+
+    return VMI_EVENT_RESPONSE_TOGGLE_SINGLESTEP | // Turn on singlestep
+           VMI_EVENT_RESPONSE_VMM_PAGETABLE_ID;
 }
 
 void remove_trap(drakvuf_t drakvuf,
@@ -1435,6 +1463,17 @@ bool init_vmi(drakvuf_t drakvuf)
     if (VMI_FAILURE == vmi_register_event(drakvuf->vmi, &drakvuf->mem_event))
     {
         fprintf(stderr, "Failed to register generic mem event\n");
+        return 0;
+    }
+
+    drakvuf->emul_event.version = VMI_EVENTS_VERSION;
+    drakvuf->emul_event.type = VMI_EVENT_FAILED_EMULATION;
+    drakvuf->emul_event.data = drakvuf;
+    drakvuf->emul_event.callback = emul_event_cb;
+
+    if (VMI_FAILURE == vmi_register_event(drakvuf->vmi, &drakvuf->emul_event))
+    {
+        fprintf(stderr, "Failed to register failed emulation event\n");
         return 0;
     }
 
