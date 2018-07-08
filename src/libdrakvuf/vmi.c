@@ -124,7 +124,7 @@
 #include "vmi.h"
 #include "rekall-profile.h"
 
-static uint8_t sw_trap = SW_TRAP;
+static uint32_t sw_trap = SW_TRAP;
 
 /*
  * This function gets called from the singlestep event
@@ -253,10 +253,18 @@ event_response_t post_mem_cb(vmi_instance_t vmi, vmi_event_t* event)
         {
 
             addr_t* pa = loop->data;
+#if defined(I386) || defined(X86_64)
             uint8_t test = 0;
+#elif defined(ARM64)
+            uint32_t test = 0;
+#endif
             struct wrapper* s = g_hash_table_lookup(drakvuf->breakpoint_lookup_pa, pa);
 
+#if defined(I386) || defined(X86_64)
             if ( VMI_FAILURE == vmi_read_8_pa(drakvuf->vmi, *pa, &test) )
+#elif defined(ARM64)
+            if ( VMI_FAILURE == vmi_read_32_pa(drakvuf->vmi, *pa, &test) )
+#endif
             {
                 fprintf(stderr, "Critical error in re-copying remapped gfn\n");
                 drakvuf->interrupted = -1;
@@ -271,9 +279,15 @@ event_response_t post_mem_cb(vmi_instance_t vmi, vmi_event_t* event)
             else
             {
                 s->breakpoint.doubletrap = 0;
+#if defined(I386) || defined(X86_64)
                 if ( VMI_FAILURE == vmi_write_8_pa(drakvuf->vmi,
                                                    (pass->remapped_gfn->r << 12) + (*pa & VMI_BIT_MASK(0,11)),
                                                    &sw_trap) )
+#elif defined(ARM64)
+                if ( VMI_FAILURE == vmi_write_32_pa(drakvuf->vmi,
+                                                    (pass->remapped_gfn->r << 12) + (*pa & VMI_BIT_MASK(0,11)),
+                                                    &sw_trap) )
+#endif
                 {
                     fprintf(stderr, "Critical error in re-copying remapped gfn\n");
                     drakvuf->interrupted = -1;
@@ -304,7 +318,11 @@ event_response_t pre_mem_cb(vmi_instance_t vmi, vmi_event_t* event)
     UNUSED(vmi);
     event_response_t rsp = 0;
     drakvuf_t drakvuf = event->data;
+#if defined(I386) || defined(X86_64)
     drakvuf->regs[event->vcpu_id] = event->x86_regs;
+#elif defined(ARM64)
+    drakvuf->arm_regs[event->vcpu_id] = event->arm_regs;
+#endif
 
     if (event->mem_event.gfn == drakvuf->zero_page_gfn)
     {
@@ -351,7 +369,11 @@ event_response_t pre_mem_cb(vmi_instance_t vmi, vmi_event_t* event)
                 .proc_data.ppid      = proc_data.ppid,
                 .proc_data.userid    = proc_data.userid,
                 .trap_pa = pa,
+#if defined(I386) || defined(X86_64)
                 .regs = event->x86_regs,
+#elif defined(ARM64)
+                .arm_regs = event->arm_regs,
+#endif
                 .vcpu = event->vcpu_id,
             };
 
@@ -459,6 +481,82 @@ event_response_t pre_mem_cb(vmi_instance_t vmi, vmi_event_t* event)
     }
 
     g_free( (gpointer)proc_data.name );
+    return rsp;
+}
+
+event_response_t smc_cb(vmi_instance_t vmi, vmi_event_t* event)
+{
+    UNUSED(vmi);
+    event_response_t rsp = 0;
+    drakvuf_t drakvuf = event->data;
+    drakvuf->arm_regs[event->vcpu_id] = event->arm_regs;
+
+    reg_t ttbr0 = event->arm_regs->ttbr0;
+    reg_t ttbr1 = event->arm_regs->ttbr1;
+    addr_t pa = (event->privcall_event.gfn << 12)
+                + event->privcall_event.offset;
+
+    PRINT_DEBUG("SMC event vCPU %u altp2m:%u TTBR0: 0x%"PRIx64" TTBR1: 0x%"PRIx64" PA=0x%"PRIx64" PC=0x%"PRIx64" offset=0x%"PRIx64".\n",
+                event->vcpu_id, event->slat_id, ttbr0, ttbr1, pa,
+                event->arm_regs->pc, event->privcall_event.offset);
+
+    struct wrapper* s = g_hash_table_lookup(drakvuf->breakpoint_lookup_pa, &pa);
+    if (!s)
+    {
+        /*
+         * No trap is currently registered for this location
+         * but this event may have been triggered by one we just
+         * removed.
+         */
+        uint32_t test = 0;
+        if ( VMI_FAILURE == vmi_read_32_pa(vmi, pa, &test) )
+        {
+            fprintf(stderr, "Critical error in SMC callback, can't read page\n");
+            drakvuf->interrupted = -1;
+            return 0;
+        }
+        /*
+         * If there is already a SMC instruction at pa we could reinject it,
+         * as soon as this is supported by xen and libvmi.
+         */
+
+        return 0;
+    }
+
+    drakvuf->in_callback = 1;
+
+    GSList* loop = s->traps;
+    while (loop)
+    {
+
+        drakvuf_trap_t* trap = loop->data;
+        drakvuf_trap_info_t trap_info =
+        {
+            .trap = trap,
+            .trap_pa = pa,
+            .arm_regs = event->arm_regs,
+            .vcpu = event->vcpu_id,
+        };
+
+        loop = loop->next;
+        rsp |= trap->cb(drakvuf, &trap_info);
+
+    }
+    drakvuf->in_callback = 0;
+
+    process_free_requests(drakvuf);
+    // Check if we have traps still active on this breakpoint
+    if ( g_hash_table_lookup(drakvuf->breakpoint_lookup_pa, &pa) )
+    {
+        PRINT_DEBUG("Switching altp2m and to singlestep on vcpu %u\n", event->vcpu_id);
+        event->slat_id = 0;
+        drakvuf->step_event[event->vcpu_id]->callback = vmi_reset_trap;
+        drakvuf->step_event[event->vcpu_id]->data = drakvuf;
+        return rsp |
+               VMI_EVENT_RESPONSE_TOGGLE_SINGLESTEP | // Enable singlestep
+               VMI_EVENT_RESPONSE_VMM_PAGETABLE_ID;
+    }
+
     return rsp;
 }
 
@@ -776,18 +874,29 @@ void remove_trap(drakvuf_t drakvuf,
             {
 
                 struct remapped_gfn* remapped_gfn = g_hash_table_lookup(drakvuf->remapped_gfns, &current_gfn);
-                uint8_t backup;
 
+#if defined(I386) || defined(X86_64)
+                uint8_t backup;
                 if ( VMI_FAILURE == vmi_read_8_pa(drakvuf->vmi, container->breakpoint.pa, &backup) )
+#elif defined(ARM64)
+                uint32_t backup;
+                if ( VMI_FAILURE == vmi_read_32_pa(drakvuf->vmi, container->breakpoint.pa, &backup) )
+#endif
                 {
                     fprintf(stderr, "Critical error in removing int3\n");
                     drakvuf->interrupted = -1;
                     break;
                 }
 
+#if defined(I386) || defined(X86_64)
                 if ( VMI_FAILURE == vmi_write_8_pa(drakvuf->vmi,
-                                                   (remapped_gfn->r << 12) + (container->breakpoint.pa & VMI_BIT_MASK(0,11)),
-                                                   &backup) )
+                                                    (remapped_gfn->r << 12) + (container->breakpoint.pa & VMI_BIT_MASK(0,11)),
+                                                    &backup) )
+#elif defined(ARM64)
+                if ( VMI_FAILURE == vmi_write_32_pa(drakvuf->vmi,
+                                                    (remapped_gfn->r << 12) + (container->breakpoint.pa & VMI_BIT_MASK(0,11)),
+                                                    &backup) )
+#endif
                 {
                     fprintf(stderr, "Critical error in removing int3\n");
                     drakvuf->interrupted = -1;
@@ -799,7 +908,6 @@ void remove_trap(drakvuf_t drakvuf,
 
                 g_hash_table_remove(drakvuf->breakpoint_lookup_pa, &container->breakpoint.pa);
             }
-
             break;
         }
         case MEMACCESS:
@@ -1087,9 +1195,14 @@ bool inject_trap_pa(drakvuf_t drakvuf,
     }
 
     addr_t rpa = (remapped_gfn->r<<12) + (container->breakpoint.pa & VMI_BIT_MASK(0,11));
-    uint8_t test;
 
+#if defined(I386) || defined(X86_64)
+    uint8_t test;
     if (VMI_FAILURE == vmi_read_8_pa(vmi, pa, &test))
+#elif defined(ARM64)
+    uint32_t test;
+    if (VMI_FAILURE == vmi_read_32_pa(vmi, pa, &test))
+#endif
     {
         PRINT_DEBUG("FAILED TO READ @ 0x%lx !\n", container->breakpoint.pa);
         goto err_exit;
@@ -1104,7 +1217,11 @@ bool inject_trap_pa(drakvuf_t drakvuf,
     {
         container->breakpoint.doubletrap = 0;
 
+#if defined(I386) || defined(X86_64)
         if (VMI_FAILURE == vmi_write_8_pa(vmi, rpa, &sw_trap))
+#elif defined(ARM64)
+        if (VMI_FAILURE == vmi_write_32_pa(vmi, rpa, &sw_trap))
+#endif
         {
             PRINT_DEBUG("FAILED TO INJECT TRAP @ 0x%lx !\n", container->breakpoint.pa);
             goto err_exit;
@@ -1415,6 +1532,7 @@ bool init_vmi(drakvuf_t drakvuf)
     if (rc < 0)
         return 0;
 
+#if defined(I386) || defined(X86_64)
     SETUP_INTERRUPT_EVENT(&drakvuf->interrupt_event, 0, int3_cb);
     drakvuf->interrupt_event.data = drakvuf;
 
@@ -1432,6 +1550,16 @@ bool init_vmi(drakvuf_t drakvuf)
         fprintf(stderr, "Failed to register CR3 event\n");
         return 0;
     }
+#elif defined(ARM64)
+    SETUP_PRIVCALL_EVENT(&drakvuf->privcall_event, smc_cb);
+    drakvuf->privcall_event.data = drakvuf;
+
+    if (VMI_FAILURE == vmi_register_event(drakvuf->vmi, &drakvuf->privcall_event))
+    {
+        fprintf(stderr, "Failed to register interrupt event\n");
+        return 0;
+    }
+#endif
 
     SETUP_MEM_EVENT(&drakvuf->mem_event, ~0ULL, VMI_MEMACCESS_RWX, pre_mem_cb, 1);
     drakvuf->mem_event.data = drakvuf;

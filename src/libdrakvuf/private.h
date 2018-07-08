@@ -171,6 +171,7 @@ struct drakvuf
     vmi_event_t debug_event;
     vmi_event_t cpuid_event;
     vmi_event_t* step_event[16];
+    vmi_event_t privcall_event;
     drakvuf_trap_t guard0;
 
     size_t* offsets;
@@ -194,6 +195,7 @@ struct drakvuf
     int address_width;
 
     x86_registers_t* regs[16]; // vCPU specific registers recorded during the last event
+    arm_registers_t* arm_regs[16];
     addr_t kpcr[16]; // vCPU specific kpcr recorded on mov-to-cr3
 
     GHashTable* remapped_gfns; // Key: gfn
