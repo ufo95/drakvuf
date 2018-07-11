@@ -126,6 +126,22 @@
 
 static uint32_t sw_trap = SW_TRAP;
 
+status_t wrapper_vmi_read_arch(vmi_instance_t vmi, const access_context_t *ctx, uint32_t *value){
+#if defined(I386) || defined(X86_64)
+            return vmi_read_8_pa(vmi, ctx, (uint8_t *)value);
+#elif defined(ARM64)
+            return vmi_read_32_pai(vmi, ctx, value);
+#endif
+}
+
+status_t wrapper_vmi_write_arch(vmi_instance_t vmi, const access_context_t *ctx, uint32_t *value){
+#if defined(I386) || defined(X86_64)
+            return vmi_write_8_pa(vmi, ctx, (uint8_t *)value);
+#elif defined(ARM64)
+            return vmi_write_32_pai(vmi, ctx, value);
+#endif
+}
+
 /*
  * This function gets called from the singlestep event
  * after an int3 or a read event happens.
@@ -253,18 +269,10 @@ event_response_t post_mem_cb(vmi_instance_t vmi, vmi_event_t* event)
         {
 
             addr_t* pa = loop->data;
-#if defined(I386) || defined(X86_64)
-            uint8_t test = 0;
-#elif defined(ARM64)
             uint32_t test = 0;
-#endif
             struct wrapper* s = g_hash_table_lookup(drakvuf->breakpoint_lookup_pa, pa);
 
-#if defined(I386) || defined(X86_64)
-            if ( VMI_FAILURE == vmi_read_8_pa(drakvuf->vmi, *pa, &test) )
-#elif defined(ARM64)
-            if ( VMI_FAILURE == vmi_read_32_pa(drakvuf->vmi, *pa, &test) )
-#endif
+            if ( VMI_FAILURE == wrapper_vmi_read_arch(drakvuf->vmi, *pa, &test) )
             {
                 fprintf(stderr, "Critical error in re-copying remapped gfn\n");
                 drakvuf->interrupted = -1;
@@ -279,15 +287,9 @@ event_response_t post_mem_cb(vmi_instance_t vmi, vmi_event_t* event)
             else
             {
                 s->breakpoint.doubletrap = 0;
-#if defined(I386) || defined(X86_64)
-                if ( VMI_FAILURE == vmi_write_8_pa(drakvuf->vmi,
-                                                   (pass->remapped_gfn->r << 12) + (*pa & VMI_BIT_MASK(0,11)),
-                                                   &sw_trap) )
-#elif defined(ARM64)
-                if ( VMI_FAILURE == vmi_write_32_pa(drakvuf->vmi,
+                if ( VMI_FAILURE == wrapper_vmi_write_arch(drakvuf->vmi,
                                                     (pass->remapped_gfn->r << 12) + (*pa & VMI_BIT_MASK(0,11)),
                                                     &sw_trap) )
-#endif
                 {
                     fprintf(stderr, "Critical error in re-copying remapped gfn\n");
                     drakvuf->interrupted = -1;
@@ -875,28 +877,17 @@ void remove_trap(drakvuf_t drakvuf,
 
                 struct remapped_gfn* remapped_gfn = g_hash_table_lookup(drakvuf->remapped_gfns, &current_gfn);
 
-#if defined(I386) || defined(X86_64)
-                uint8_t backup;
-                if ( VMI_FAILURE == vmi_read_8_pa(drakvuf->vmi, container->breakpoint.pa, &backup) )
-#elif defined(ARM64)
                 uint32_t backup;
-                if ( VMI_FAILURE == vmi_read_32_pa(drakvuf->vmi, container->breakpoint.pa, &backup) )
-#endif
+                if ( VMI_FAILURE == wrapper_vmi_read_arch(drakvuf->vmi, container->breakpoint.pa, &backup) )
                 {
                     fprintf(stderr, "Critical error in removing int3\n");
                     drakvuf->interrupted = -1;
                     break;
                 }
 
-#if defined(I386) || defined(X86_64)
-                if ( VMI_FAILURE == vmi_write_8_pa(drakvuf->vmi,
+                if ( VMI_FAILURE == wrapper_vmi_write_arch(drakvuf->vmi,
                                                     (remapped_gfn->r << 12) + (container->breakpoint.pa & VMI_BIT_MASK(0,11)),
                                                     &backup) )
-#elif defined(ARM64)
-                if ( VMI_FAILURE == vmi_write_32_pa(drakvuf->vmi,
-                                                    (remapped_gfn->r << 12) + (container->breakpoint.pa & VMI_BIT_MASK(0,11)),
-                                                    &backup) )
-#endif
                 {
                     fprintf(stderr, "Critical error in removing int3\n");
                     drakvuf->interrupted = -1;
@@ -1196,13 +1187,8 @@ bool inject_trap_pa(drakvuf_t drakvuf,
 
     addr_t rpa = (remapped_gfn->r<<12) + (container->breakpoint.pa & VMI_BIT_MASK(0,11));
 
-#if defined(I386) || defined(X86_64)
-    uint8_t test;
-    if (VMI_FAILURE == vmi_read_8_pa(vmi, pa, &test))
-#elif defined(ARM64)
     uint32_t test;
-    if (VMI_FAILURE == vmi_read_32_pa(vmi, pa, &test))
-#endif
+    if (VMI_FAILURE == wrapper_vmi_read_arch(vmi, pa, &test))
     {
         PRINT_DEBUG("FAILED TO READ @ 0x%lx !\n", container->breakpoint.pa);
         goto err_exit;
@@ -1217,11 +1203,7 @@ bool inject_trap_pa(drakvuf_t drakvuf,
     {
         container->breakpoint.doubletrap = 0;
 
-#if defined(I386) || defined(X86_64)
-        if (VMI_FAILURE == vmi_write_8_pa(vmi, rpa, &sw_trap))
-#elif defined(ARM64)
-        if (VMI_FAILURE == vmi_write_32_pa(vmi, rpa, &sw_trap))
-#endif
+        if (VMI_FAILURE == wrapper_vmi_write_arch(vmi, rpa, &sw_trap))
         {
             PRINT_DEBUG("FAILED TO INJECT TRAP @ 0x%lx !\n", container->breakpoint.pa);
             goto err_exit;
