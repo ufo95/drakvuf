@@ -113,6 +113,8 @@
     #define SW_TRAP 0xCC //INT3
 #elif defined(ARM64)
     #define SW_TRAP 0xD4000003 //SMC64
+#elif defined(ARM32)
+    #define SW_TRAP 0xE1600070 //SMC32
 #endif
 
 #include <glib.h>

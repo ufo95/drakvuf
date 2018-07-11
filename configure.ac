@@ -124,6 +124,10 @@ x86?64*)
     arch=x86_64
     AC_DEFINE([X86_64], 1, [Define for the AMD x86-64 architecture.])
     ;;
+arm*)
+    arch=arm32
+    AC_DEFINE([ARM32], 1, [Define for the ARM32 architecture.])
+    ;;  
 aarch64*)
     arch=arm64
     AC_DEFINE([ARM64], 1, [Define for the ARM64 architecture.])

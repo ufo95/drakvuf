@@ -129,7 +129,7 @@ static uint32_t sw_trap = SW_TRAP;
 status_t wrapper_vmi_read_arch(vmi_instance_t vmi, const access_context_t *ctx, uint32_t *value){
 #if defined(I386) || defined(X86_64)
             return vmi_read_8_pa(vmi, ctx, (uint8_t *)value);
-#elif defined(ARM64)
+#elif defined(ARM64) || defined(ARM32)
             return vmi_read_32_pai(vmi, ctx, value);
 #endif
 }
@@ -137,7 +137,7 @@ status_t wrapper_vmi_read_arch(vmi_instance_t vmi, const access_context_t *ctx, 
 status_t wrapper_vmi_write_arch(vmi_instance_t vmi, const access_context_t *ctx, uint32_t *value){
 #if defined(I386) || defined(X86_64)
             return vmi_write_8_pa(vmi, ctx, (uint8_t *)value);
-#elif defined(ARM64)
+#elif defined(ARM64) || defined(ARM32)
             return vmi_write_32_pai(vmi, ctx, value);
 #endif
 }
@@ -322,7 +322,7 @@ event_response_t pre_mem_cb(vmi_instance_t vmi, vmi_event_t* event)
     drakvuf_t drakvuf = event->data;
 #if defined(I386) || defined(X86_64)
     drakvuf->regs[event->vcpu_id] = event->x86_regs;
-#elif defined(ARM64)
+#elif defined(ARM64) || defined(ARM32)
     drakvuf->arm_regs[event->vcpu_id] = event->arm_regs;
 #endif
 
@@ -373,7 +373,7 @@ event_response_t pre_mem_cb(vmi_instance_t vmi, vmi_event_t* event)
                 .trap_pa = pa,
 #if defined(I386) || defined(X86_64)
                 .regs = event->x86_regs,
-#elif defined(ARM64)
+#elif defined(ARM64) || defined(ARM32)
                 .arm_regs = event->arm_regs,
 #endif
                 .vcpu = event->vcpu_id,
@@ -1532,7 +1532,7 @@ bool init_vmi(drakvuf_t drakvuf)
         fprintf(stderr, "Failed to register CR3 event\n");
         return 0;
     }
-#elif defined(ARM64)
+#elif defined(ARM64) || defined(ARM32)
     SETUP_PRIVCALL_EVENT(&drakvuf->privcall_event, smc_cb);
     drakvuf->privcall_event.data = drakvuf;
 
