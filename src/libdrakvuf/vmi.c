@@ -126,19 +126,19 @@
 
 static uint32_t sw_trap = SW_TRAP;
 
-status_t wrapper_vmi_read_arch(vmi_instance_t vmi, const access_context_t *ctx, uint32_t *value){
+status_t wrapper_vmi_read_arch(vmi_instance_t vmi, addr_t pa, uint32_t *value){
 #if defined(I386) || defined(X86_64)
-            return vmi_read_8_pa(vmi, ctx, (uint8_t *)value);
+            return vmi_read_8_pa(vmi, pa, (uint8_t *)value);
 #elif defined(ARM64) || defined(ARM32)
-            return vmi_read_32_pai(vmi, ctx, value);
+            return vmi_read_32_pai(vmi, pa, value);
 #endif
 }
 
-status_t wrapper_vmi_write_arch(vmi_instance_t vmi, const access_context_t *ctx, uint32_t *value){
+status_t wrapper_vmi_write_arch(vmi_instance_t vmi, addr_t pa, uint32_t *value){
 #if defined(I386) || defined(X86_64)
-            return vmi_write_8_pa(vmi, ctx, (uint8_t *)value);
+            return vmi_write_8_pa(vmi, pa, (uint8_t *)value);
 #elif defined(ARM64) || defined(ARM32)
-            return vmi_write_32_pai(vmi, ctx, value);
+            return vmi_write_32_pai(vmi, pa, value);
 #endif
 }
 
