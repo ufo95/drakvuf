@@ -210,8 +210,11 @@ typedef struct drakvuf_trap_info
     uint16_t altp2m_idx;
     proc_data_t proc_data ; /* Current executing process data */
     addr_t trap_pa;
-    x86_registers_t* regs;
-    arm_registers_t* arm_regs;
+    union
+    {
+        x86_registers_t* regs;
+        arm_registers_t* arm_regs;
+    };
     drakvuf_trap_t* trap;
     union
     {

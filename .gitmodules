@@ -6,3 +6,7 @@
 	path = libvmi
 	url = https://github.com/tklengyel/libvmi
 	ignore = dirty
+[submodule "xen-arm"]
+	path = xen-arm
+	url = https://github.com/sergej-proskurin/xen.git
+	branch = arm-altp2m-drakvuf
