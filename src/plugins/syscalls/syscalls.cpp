@@ -111,7 +111,6 @@
 #include "winscproto.h"
 #include "linuxscproto.h"
 
-
 static char* extract_string(drakvuf_t drakvuf, drakvuf_trap_info_t* info, const arg_t& arg, addr_t val)
 {
     if ( arg.dir == DIR_IN || arg.dir == DIR_INOUT )
@@ -441,6 +440,15 @@ static event_response_t linux_cb(drakvuf_t drakvuf, drakvuf_trap_info_t* info)
     syscalls* s = wrapper->sc;
     const syscall_t* sc = NULL;
 
+#if defined(ARM64)
+    printf("[SYSCALL] vCPU:%" PRIu32 " PC:%" PRIx64 " CPSR:%" PRIx32 " TTBR0:0x%" PRIx64 " TTBR1:0x%" PRIx64 ", %s: %s!%s\n",
+           info->vcpu, info->arm_regs->pc, info->arm_regs->cpsr,
+           info->arm_regs->ttbr0, info->arm_regs->ttbr1,
+           USERIDSTR(drakvuf),
+           info->trap->breakpoint.module, info->trap->name);
+    return 0;
+#endif
+
     if (wrapper->syscall_index>-1 )
     {
         sc = &linux_syscalls[wrapper->syscall_index];
@@ -552,6 +560,12 @@ static GSList* create_trap_config(drakvuf_t drakvuf, syscalls* s, symbols_t* sym
     GSList* ret = NULL;
     unsigned long i;
     unsigned long j;
+    trap_type_t traptype;
+#if defined (I386) || defined(X86_64)
+    traptype = BREAKPOINT;
+#elif defined (ARM64)
+    traptype = PRIVCALL;
+#endif
 
     PRINT_DEBUG("Received %lu symbols\n", symbols->count);
 
@@ -595,7 +609,7 @@ static GSList* create_trap_config(drakvuf_t drakvuf, syscalls* s, symbols_t* sym
             trap->breakpoint.addr = ntoskrnl + symbol->rva;
             trap->breakpoint.module = "ntoskrnl.exe";
             trap->name = g_strdup(symbol->name);
-            trap->type = BREAKPOINT;
+            trap->type = traptype;
             trap->cb = win_cb;
             trap->data = wrapper;
 
@@ -635,6 +649,9 @@ static GSList* create_trap_config(drakvuf_t drakvuf, syscalls* s, symbols_t* sym
             else if ( strncmp(symbol->name, "__x64_sys_", 10) )
                 continue;
 
+            if (!strcmp(symbol->name, "sys_reg_genericv8_init"))
+                continue;
+
             PRINT_DEBUG("[SYSCALLS] Adding trap to %s at 0x%lx (kaslr 0x%lx)\n", symbol->name, symbol->rva + kaslr, kaslr);
 
             drakvuf_trap_t* trap = (drakvuf_trap_t*)g_malloc0(sizeof(drakvuf_trap_t));
@@ -644,7 +661,7 @@ static GSList* create_trap_config(drakvuf_t drakvuf, syscalls* s, symbols_t* sym
             trap->breakpoint.addr = symbol->rva + kaslr;
             trap->breakpoint.module = "linux";
             trap->name = g_strdup(symbol->name);
-            trap->type = BREAKPOINT;
+            trap->type = traptype;
             trap->cb = linux_cb;
             //trap->data = s;
 
