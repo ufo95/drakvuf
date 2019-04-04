@@ -106,6 +106,7 @@ matrix:
       install:
         - ls
         - ls travis-scripts
+        - ls test-packages
         - ./travis-scripts/prepare_chroot_dir.sh
 
 #
