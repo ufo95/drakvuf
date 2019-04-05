@@ -323,6 +323,7 @@ bool inject_trap_breakpoint(drakvuf_t drakvuf, drakvuf_trap_t* trap);
 bool inject_trap_reg(drakvuf_t drakvuf, drakvuf_trap_t* trap);
 bool inject_trap_debug(drakvuf_t drakvuf, drakvuf_trap_t* trap);
 bool inject_trap_cpuid(drakvuf_t drakvuf, drakvuf_trap_t* trap);
+bool inject_trap_sw(drakvuf_t drakvuf, drakvuf_trap_t* trap);
 
 event_response_t post_mem_cb(vmi_instance_t vmi, vmi_event_t* event);
 event_response_t pre_mem_cb(vmi_instance_t vmi, vmi_event_t* event);
