@@ -332,4 +332,9 @@ event_response_t cr3_cb(vmi_instance_t vmi, vmi_event_t* event);
 event_response_t debug_cb(vmi_instance_t vmi, vmi_event_t* event);
 event_response_t cpuid_cb(vmi_instance_t vmi, vmi_event_t* event);
 
+event_response_t smc_cb(vmi_instance_t vmi, vmi_event_t* event);
+status_t vmi_write_sw_trap(vmi_instance_t vmi, addr_t pa, uint32_t* value);
+status_t vmi_read_sw_trap(vmi_instance_t vmi, addr_t pa, uint32_t* value);
+
+
 #endif
