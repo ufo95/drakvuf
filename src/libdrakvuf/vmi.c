@@ -1577,7 +1577,7 @@ bool init_vmi(drakvuf_t drakvuf, bool libvmi_conf)
     drakvuf->remove_traps =
         g_hash_table_new_full(g_int64_hash, g_int64_equal, free, NULL);
 
-#if !defined(ARM64) 
+#if !defined(ARM64)
 //ARM doesnt support singlestep via CPU yet
 
     unsigned int i;

@@ -436,17 +436,17 @@ static int linux_build_argbuf(uint8_t* buf, vmi_instance_t vmi, drakvuf_trap_inf
 #elif defined(ARM64)
             // The args are passed directly via registers in sycall context
             if ( nargs > 0 )
-		vmi_get_vcpureg(vmi, &buf64[0], X0, info->vcpu);
+        		vmi_get_vcpureg(vmi, &buf64[0], X0, info->vcpu);
             if ( nargs > 1 )
-		vmi_get_vcpureg(vmi, &buf64[1], X1, info->vcpu);
+		        vmi_get_vcpureg(vmi, &buf64[1], X1, info->vcpu);
             if ( nargs > 2 )
-		vmi_get_vcpureg(vmi, &buf64[2], X2, info->vcpu);
+                vmi_get_vcpureg(vmi, &buf64[2], X2, info->vcpu);
             if ( nargs > 3 )
-		vmi_get_vcpureg(vmi, &buf64[3], X3, info->vcpu);
+                vmi_get_vcpureg(vmi, &buf64[3], X3, info->vcpu);
             if ( nargs > 4 )
-		vmi_get_vcpureg(vmi, &buf64[4], X4, info->vcpu);
+                vmi_get_vcpureg(vmi, &buf64[4], X4, info->vcpu);
             if ( nargs > 5 )
-		vmi_get_vcpureg(vmi, &buf64[5], X5, info->vcpu);
+                vmi_get_vcpureg(vmi, &buf64[5], X5, info->vcpu);
 #endif
         }
     }
