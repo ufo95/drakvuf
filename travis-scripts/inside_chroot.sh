@@ -6,7 +6,7 @@ apt install -y make autoconf autoconf-archive git libtool pkg-config libglib2.0-
 #apt install -y python-dev gettext iasl uuid-dev libpixman-1-dev ftp libyajl-dev libfdt-dev
 
 #install prebuild xen
-dpkg -i xentools_4.11-drakvuf1-1_arm64.deb
+dpkg -i test-packages/xentools_4.11-drakvuf1-1_arm64.deb
 
 #build & install libvmi
 git submodule update --init libvmi
