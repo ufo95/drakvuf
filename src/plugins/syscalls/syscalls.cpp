@@ -185,10 +185,18 @@ static void print_header(output_format_t format, drakvuf_t drakvuf, const drakvu
 
         case OUTPUT_DEFAULT:
         default:
+#if defined(I386) || defined(X86_64)
             printf("[SYSCALL] TIME:" FORMAT_TIMEVAL " VCPU:%" PRIu32 " CR3:0x%" PRIx64 ",\"%s\" %s:%" PRIi64" %s!%s",
                    UNPACK_TIMEVAL(info->timestamp), info->vcpu, info->regs->cr3, info->proc_data.name,
                    USERIDSTR(drakvuf), info->proc_data.userid,
                    info->trap->breakpoint.module, info->trap->name);
+#elif defined(ARM64)
+            printf("[SYSCALL] TIME:" FORMAT_TIMEVAL " VCPU:%" PRIu32 " CPSR:0x%" PRIx32 ",\"%s\" %s:%" PRIi64" %s!%s",
+                   UNPACK_TIMEVAL(info->timestamp), info->vcpu, info->arm_regs->cpsr, info->proc_data.name,
+                   USERIDSTR(drakvuf), info->proc_data.userid,
+                   info->trap->breakpoint.module, info->trap->name);
+#endif
+
             break;
     }
 }

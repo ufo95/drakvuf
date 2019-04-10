@@ -598,7 +598,11 @@ char* drakvuf_read_ascii_str(drakvuf_t drakvuf, drakvuf_trap_info_t* info, addr_
     access_context_t ctx =
     {
         .translate_mechanism = VMI_TM_PROCESS_DTB,
+#if defined(I386) || defined(X86_64)
         .dtb = info->regs->cr3,
+#elif defined(ARM64)
+        .dtb = info->arm_regs->cpsr,
+#endif
         .addr = addr,
     };
 
