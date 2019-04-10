@@ -1,26 +1,25 @@
 #!/bin/bash
 
 apt update
-apt install -y make autoconf autoconf-archive git libtool pkg-config libglib2.0-dev bison flex libjson-c-dev clang
+apt install -y make autoconf autoconf-archive git libtool pkg-config libglib2.0-dev bison flex libjson-c-dev clang cmake
 # for xen-arm:
 #apt install -y python-dev gettext iasl uuid-dev libpixman-1-dev ftp libyajl-dev libfdt-dev
 
-echo $PWD
 #install prebuild xen
-dpkg -i test-packages/xen_1-1_arm64.deb
+dpkg -i xentools_4.11-drakvuf1-1_arm64.deb
 
 #build & install libvmi
-#git submodule update --init libvmi
+git submodule update --init libvmi
 #cd libvmi/
 #echo $PWD
-cd ..
-git clone https://github.com/libvmi/libvmi.git
+#cd ..
+#git clone https://github.com/libvmi/libvmi.git
 cd libvmi
 
-./autogen.sh
-./configure --disable-kvm --disable-examples
-make -j
-make install
+mkdir build
+cd build
+cmake -DENABLE_KVM=OFF -DENABLE_FILE=OFF ..
+#install??
 
 cd ../drakvuf
 #build drakvuf

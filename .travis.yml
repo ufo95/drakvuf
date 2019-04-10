@@ -84,6 +84,30 @@ matrix:
         - make
 
 #
+# compile test for arm
+#
+    - env:
+        - TEST="compile for arm"
+      addons:
+        apt:
+            sources:
+                - ubuntu-toolchain-r-test
+            packages:
+                - debootstrap
+                - binfmt-support
+                - qemu-user-static
+      before_install:
+        - mkdir -p arm-chroot
+        - pwd
+        - sudo tar -xf test-packages/arm-chroot.tar.gz -C arm-chroot
+      install:
+        - ls
+        - ls travis-scripts
+        - ls test-packages
+        - ./travis-scripts/prepare_chroot_dir.sh
+
+
+#
 # Coverity
 #
     - env:
