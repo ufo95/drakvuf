@@ -411,6 +411,7 @@ static int linux_build_argbuf(uint8_t* buf, vmi_instance_t vmi, drakvuf_trap_inf
         }
         else
         {
+#if defined(X86_64)
             // The args are passed directly via registers in sycall context
             if ( nargs > 0 )
                 buf64[0] = info->regs->rdi;
@@ -424,6 +425,21 @@ static int linux_build_argbuf(uint8_t* buf, vmi_instance_t vmi, drakvuf_trap_inf
                 buf64[4] = info->regs->r8;
             if ( nargs > 5 )
                 buf64[5] = info->regs->r9;
+#elif defined(ARM64)
+            // The args are passed directly via registers in sycall context
+            if ( nargs > 0 )
+		vmi_get_vcpureg(vmi, &buf64[0], X0, info->vcpu);
+            if ( nargs > 1 )
+		vmi_get_vcpureg(vmi, &buf64[1], X1, info->vcpu);
+            if ( nargs > 2 )
+		vmi_get_vcpureg(vmi, &buf64[2], X2, info->vcpu);
+            if ( nargs > 3 )
+		vmi_get_vcpureg(vmi, &buf64[3], X3, info->vcpu);
+            if ( nargs > 4 )
+		vmi_get_vcpureg(vmi, &buf64[4], X4, info->vcpu);
+            if ( nargs > 5 )
+		vmi_get_vcpureg(vmi, &buf64[5], X5, info->vcpu);
+#endif
         }
     }
 
@@ -439,15 +455,6 @@ static event_response_t linux_cb(drakvuf_t drakvuf, drakvuf_trap_info_t* info)
     syscall_wrapper_t* wrapper = (syscall_wrapper_t*)info->trap->data;
     syscalls* s = wrapper->sc;
     const syscall_t* sc = NULL;
-
-#if defined(ARM64)
-    printf("[SYSCALL] vCPU:%" PRIu32 " PC:%" PRIx64 " CPSR:%" PRIx32 " TTBR0:0x%" PRIx64 " TTBR1:0x%" PRIx64 ", %s: %s!%s\n",
-           info->vcpu, info->arm_regs->pc, info->arm_regs->cpsr,
-           info->arm_regs->ttbr0, info->arm_regs->ttbr1,
-           USERIDSTR(drakvuf),
-           info->trap->breakpoint.module, info->trap->name);
-    return 0;
-#endif
 
     if (wrapper->syscall_index>-1 )
     {

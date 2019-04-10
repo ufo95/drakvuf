@@ -540,7 +540,7 @@ event_response_t smc_cb(vmi_instance_t vmi, vmi_event_t* event)
     GSList* loop = s->traps;
     while (loop)
     {
-        drakvuf_trap_t* trap = (drakvuf_trap_t *)loop->data;
+        drakvuf_trap_t* trap = (drakvuf_trap_t*)loop->data;
         drakvuf_trap_info_t trap_info =
         {
             .trap = trap,
@@ -1577,6 +1577,9 @@ bool init_vmi(drakvuf_t drakvuf, bool libvmi_conf)
     drakvuf->remove_traps =
         g_hash_table_new_full(g_int64_hash, g_int64_equal, free, NULL);
 
+#if !defined(ARM64) 
+//ARM doesnt support singlestep via CPU yet
+
     unsigned int i;
     /*
      * Setup singlestep event handlers but don't turn on MTF.
@@ -1593,6 +1596,7 @@ bool init_vmi(drakvuf_t drakvuf, bool libvmi_conf)
             return 0;
         }
     }
+#endif
 
     /* domain->max_pages is mostly just an annoyance that we can safely ignore */
     rc = xc_domain_setmaxmem(drakvuf->xen->xc, drakvuf->domID, ~0);
