@@ -2,7 +2,7 @@
 # Based on a test script from avsm/ocaml repo https://github.com/avsm/ocaml
 
 CHROOT_DIR=/srv/arm-chroot
-TRAVIS_BUILD_DIR=/home/ufo/git_stuff/drakvuf
+#TRAVIS_BUILD_DIR=~/git_stuff/drakvuf
 
 sudo tar -xf ${TRAVIS_BUILD_DIR}/test-packages/arm-chroot.tar.gz -C /srv/
 sudo cp /etc/resolv.conf ${CHROOT_DIR}/etc/resolv.conf
