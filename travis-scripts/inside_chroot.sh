@@ -1,7 +1,7 @@
 #!/bin/bash
 
 apt update
-apt install -y make autoconf autoconf-archive git libtool pkg-config libglib2.0-dev bison flex libjson-c-dev clang cmake
+apt install -y make autoconf autoconf-archive git libtool pkg-config libglib2.0-dev bison flex libjson-c-dev clang cmake check
 # for xen-arm:
 #apt install -y python-dev gettext iasl uuid-dev libpixman-1-dev ftp libyajl-dev libfdt-dev
 
