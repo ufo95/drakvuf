@@ -100,11 +100,7 @@ matrix:
         - mkdir -p arm-chroot
         - pwd
         - sudo tar -xf test-packages/arm-chroot.tar.gz -C arm-chroot
-      install:
-        - ls
-        - ls travis-scripts
-        - ls test-packages
-        - ./travis-scripts/prepare_chroot_dir.sh
+      script: ./travis-scripts/prepare_chroot_dir.sh
 
 
 #

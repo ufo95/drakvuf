@@ -19,7 +19,7 @@ cd libvmi
 mkdir build
 cd build
 cmake -DENABLE_BAREFLANK=OFF -DENABLE_KVM=off ..
-make -j3
+make -j
 make install
 
 cd ../../
